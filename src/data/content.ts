@@ -1,12 +1,12 @@
 export const identity = {
   name: "Nia Solis",
-  city: "Bermuda Triangle, Atlantic",
-  lat: "25.0000° N",
-  lng: "71.0000° W",
-  tz: "Atlantic/Bermuda",
-  role: "Digital Cartograph & Creative Technologist",
+  city: "Lisbon, PT",
+  lat: "38.7223° N",
+  lng: "9.1393° W",
+  tz: "Europe/Lisbon",
+  role: "Software Designer & Creative Technologist",
   blurb:
-    "Charting clearer routes through the unknown, where curious ideas become calm, useful instruments.",
+    "Pushing pixels for 8 years with an engineering mindset, obsessing over the details and the why behind great products.",
 };
 
 /**
@@ -15,7 +15,7 @@ export const identity = {
  * the short side. Crossfaded by shade position.
  */
 export const seaPhotos = {
-  day: "/skies/day.png",
-  dusk: "/skies/dusk.png",
-  night: "/skies/night.png",
+  day: "/ocean/day.webp",
+  dusk: "/ocean/dusk.webp",
+  night: "/ocean/night.webp",
 };
