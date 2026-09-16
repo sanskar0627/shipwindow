@@ -3,7 +3,7 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "Porthole";
+const APP_NAME = "Window Seat";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -14,9 +14,9 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Open the window to daylight. Close it to enter the night. A portfolio lit by a ship's porthole.",
+          "A cabin-light portfolio. Pull the porthole shade to dim the cabin.",
       },
-      { name: "theme-color", content: "#EFEBE4" },
+      { name: "theme-color", content: "#F3EEE6" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -27,7 +27,7 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap",
       },
     ],
   }),
