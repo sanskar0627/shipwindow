@@ -1,80 +1,81 @@
 export const identity = {
   name: "Nia Solis",
-  city: "Lisbon, PT",
-  lat: "38.7223° N",
-  lng: "9.1393° W",
+  cabin: "Cabin 07",
+  city: "Lisbon",
+  lat: "38.72° N",
+  lng: "9.14° W",
   tz: "Europe/Lisbon",
-  role: "Software Designer & Creative Technologist",
+  email: "hello@niasolis.studio",
+  role: "Product designer & creative technologist",
   blurb:
-    "Pushing pixels for 8 years with an engineering mindset, obsessing over the details and the why behind great products.",
+    "Nia designs software that behaves like good objects: quiet, precise, and a little physical. Eight years across product studios, fintech and independent work.",
 };
 
 export type Project = {
   name: string;
   tag: string;
+  year: string;
   image: string;
 };
 
-export type FlightStop = {
+export const work: Project[] = [
+  {
+    name: "Apex",
+    tag: "Field tools for wildlife tracking and conservation teams",
+    year: "2025",
+    image: "/work/apex.jpg",
+  },
+  {
+    name: "Meridian",
+    tag: "Private banking, rebuilt as a quiet instrument",
+    year: "2024",
+    image: "/work/meridian.jpg",
+  },
+  {
+    name: "Folio",
+    tag: "An independent magazine on making things slowly",
+    year: "2023",
+    image: "/work/folio.jpg",
+  },
+];
+
+export type Port = {
   year: string;
   route: string;
   company: string;
   current?: boolean;
   title: string;
   copy: string;
-  mark: "atelier" | "northstar" | "independent" | "origin";
-  projects?: Project[];
 };
 
-export const flightPlan: FlightStop[] = [
+export const passage: Port[] = [
   {
     year: "2025",
     route: "LIS → SFO",
     company: "Atelier",
     current: true,
     title: "Lead Product Designer",
-    copy: "Lisbon-born, San Francisco-based product studio. Leading end-to-end product and brand work across mobile and web, shipping to millions of people.",
-    mark: "atelier",
-    projects: [
-      {
-        name: "Apex",
-        tag: "Wildlife tracking products driving conservation efforts worldwide",
-        image: "/work/apex.jpg",
-      },
-      {
-        name: "Meridian",
-        tag: "Private banking, rebuilt as a quiet instrument",
-        image: "/work/meridian.jpg",
-      },
-      {
-        name: "Folio",
-        tag: "An independent magazine on making things slowly",
-        image: "/work/folio.jpg",
-      },
-    ],
+    copy: "End-to-end product and brand work across mobile and web for a Lisbon-born, San Francisco-based studio, shipping to millions of people.",
   },
   {
     year: "2022",
     route: "BCN",
     company: "Northstar",
     title: "Senior Product Designer",
-    copy: "Design systems and product architecture for a European fintech. Shipped the card, the ledger, and the 2 a.m. support flow.",
-    mark: "northstar",
+    copy: "Design systems and product architecture for a European fintech. The card, the ledger, and the 2 a.m. support flow.",
   },
   {
     year: "2019",
     route: "BER",
     company: "Independent",
     title: "Design Engineer",
-    copy: "A three-year stretch of prototypes, editorial sites, and odd commissions — learning to make interfaces that feel like objects.",
-    mark: "independent",
+    copy: "Three years of prototypes, editorial sites and odd commissions, learning to make interfaces that feel like objects.",
   },
   {
     year: "2017",
     route: "CPT",
-    company: "First flight",
+    company: "First departure",
     title: "Junior Product Designer",
-    copy: "The first boarding pass. Interfaces, icon sets, and the habit of asking why before how.",
-    mark: "origin",
+    copy: "Interfaces, icon sets, and the habit of asking why before how.",
   },
 ];
