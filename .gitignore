@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.output/
+.nitro/
+.vercel/
+
+# Local runtime and sandbox state
+.grok/
+*.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Generated local files
+screenshots/
+attachments/
+artifacts/
+
+# OS and editor files
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,713 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --color-cabin-day: #f3eee6;
+  --color-cabin-night: #141210;
+  --color-ink-day: #1c1b19;
+  --color-ink-night: #edeae4;
+  --color-muted-day: #8a8680;
+  --color-muted-night: #9a958c;
+  --color-accent: #3d6bff;
+  --color-frame-day: #efeae2;
+  --color-frame-night: #2a2826;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html {
+    --shade: 0;
+    --bg: color-mix(
+      in oklab,
+      var(--color-cabin-day) calc((1 - var(--shade)) * 100%),
+      var(--color-cabin-night)
+    );
+    --fg: color-mix(
+      in oklab,
+      var(--color-ink-day) calc((1 - var(--shade)) * 100%),
+      var(--color-ink-night)
+    );
+    --muted: color-mix(
+      in oklab,
+      var(--color-muted-day) calc((1 - var(--shade)) * 100%),
+      var(--color-muted-night)
+    );
+    --frame: color-mix(
+      in oklab,
+      var(--color-frame-day) calc((1 - var(--shade)) * 100%),
+      var(--color-frame-night)
+    );
+    --hairline: color-mix(in oklab, var(--fg) 14%, transparent);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-accent) 28%, transparent);
+  }
+}
+
+/* ── Cabin shell ── */
+
+.cabin {
+  position: relative;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+.cabin-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 90% 50% at 14% -8%,
+    color-mix(in oklab, #e8b86a calc(var(--shade) * 16%), transparent),
+    transparent 58%
+  );
+}
+
+.cabin-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.cabin-main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 108px 24px 80px;
+}
+
+/* ── Identity plaque ── */
+
+.plaque {
+  position: absolute;
+  top: 36px;
+  left: 36px;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 14px;
+  row-gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.plaque-rule {
+  grid-row: 1 / span 5;
+  width: 2px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--muted) 0 3px,
+    transparent 3px 7px
+  );
+  opacity: 0.7;
+}
+
+.plaque-name {
+  margin: 0;
+  color: var(--fg);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+}
+
+.plaque-line {
+  margin: 0;
+  grid-column: 2;
+}
+
+.plaque-dot {
+  margin: 0 0.45em;
+}
+
+.plaque-clock {
+  display: flex;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.plaque-time {
+  color: var(--fg);
+  opacity: 0.72;
+}
+
+/* ── Window ── */
+
+.window-block {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.cabin-window {
+  touch-action: none;
+  user-select: none;
+  cursor: ns-resize;
+  outline: none;
+}
+
+.cabin-window:focus-visible {
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 45%, transparent);
+}
+
+.win-outer {
+  width: 188px;
+  height: 286px;
+  border-radius: 94px / 124px;
+  padding: 16px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--frame) 70%, white) 0%,
+    var(--frame) 42%,
+    color-mix(in oklab, var(--frame) 78%, black) 100%
+  );
+  box-shadow:
+    0 1px 0 color-mix(in oklab, white calc((1 - var(--shade)) * 55%), transparent),
+    0 22px 48px color-mix(in oklab, black calc(10% + var(--shade) * 22%), transparent),
+    inset 0 1px 1px color-mix(in oklab, white 55%, transparent),
+    inset 0 -12px 22px color-mix(in oklab, black 10%, transparent);
+}
+
+.win-gasket {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  padding: 7px;
+  background: color-mix(in oklab, var(--frame) 55%, #6b655c);
+  box-shadow:
+    inset 0 2px 8px color-mix(in oklab, black 35%, transparent),
+    0 0 0 1px color-mix(in oklab, black 12%, transparent);
+}
+
+.win-glass {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  background: #6ea8d4;
+  isolation: isolate;
+}
+
+.sky {
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+.sky-day {
+  animation: sky-drift 48s linear infinite alternate;
+}
+
+.sky-dusk,
+.sky-night {
+  animation: sky-drift 64s linear infinite alternate-reverse;
+}
+
+@keyframes sky-drift {
+  from {
+    transform: scale(1.06) translateX(0);
+  }
+  to {
+    transform: scale(1.06) translateX(-3.5%);
+  }
+}
+
+.shade {
+  position: absolute;
+  top: 0;
+  left: 3%;
+  width: 94%;
+  z-index: 2;
+  overflow: visible;
+  background: linear-gradient(180deg, #4a4a4e 0%, #2b2b2e 22%, #1e1e21 100%);
+  box-shadow:
+    0 10px 18px color-mix(in oklab, black 35%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, white 8%, transparent);
+}
+
+.shade-ribs {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 8px,
+    color-mix(in oklab, white 5%, transparent) 8px 9px
+  );
+  opacity: 0.55;
+}
+
+.shade-tab {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 55%);
+  width: 34px;
+  height: 11px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #f4f4f6, #8e8e94);
+  box-shadow:
+    0 1px 2px color-mix(in oklab, black 50%, transparent),
+    inset 0 1px 0 white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shade-groove {
+  display: block;
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+  background: color-mix(in oklab, black 28%, transparent);
+}
+
+.glare {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    118deg,
+    color-mix(in oklab, white 32%, transparent) 0%,
+    transparent 34%,
+    transparent 64%,
+    color-mix(in oklab, white 7%, transparent) 100%
+  );
+}
+
+.cabin-window[data-dragging="true"] {
+  cursor: grabbing;
+}
+
+/* ── Instruments ── */
+
+.instruments {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(72px, 1fr));
+  gap: 8px 20px;
+  width: min(320px, 100%);
+  margin-bottom: 56px;
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.inst-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inst-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.inst-value {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.inst-hint {
+  grid-column: 1 / -1;
+  margin: 10px 0 0;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.instruments[data-active="true"] .inst-value {
+  color: var(--color-accent);
+}
+
+/* ── Hero ── */
+
+.hero {
+  max-width: 34rem;
+  text-align: center;
+  margin-bottom: 72px;
+}
+
+.hero-title {
+  margin: 0 0 16px;
+  font-size: clamp(1.35rem, 1.1rem + 1.1vw, 1.75rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  text-wrap: balance;
+  color: var(--fg);
+}
+
+.hero-blurb {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* ── Flight plan ── */
+
+.flight {
+  width: min(540px, 100%);
+  position: relative;
+}
+
+.flight-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 92px;
+  margin-bottom: 8px;
+}
+
+.flight-kicker {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.flight-plane {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--color-accent);
+  margin-left: 22px;
+}
+
+.flight-plane-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.flight-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.flight-list::before {
+  content: "";
+  position: absolute;
+  left: 126px;
+  top: 0;
+  bottom: 18px;
+  border-left: 1.5px dotted color-mix(in oklab, var(--muted) 55%, transparent);
+}
+
+.flight-stop {
+  display: grid;
+  grid-template-columns: 108px 36px 1fr;
+  column-gap: 0;
+  padding-bottom: 40px;
+  position: relative;
+}
+
+.flight-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding-top: 14px;
+  padding-right: 12px;
+  font-family: var(--font-mono);
+  color: var(--muted);
+}
+
+.flight-route {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.flight-year {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.flight-node {
+  width: 11px;
+  height: 11px;
+  margin: 18px auto 0;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 2px solid color-mix(in oklab, var(--muted) 70%, var(--fg));
+  position: relative;
+  z-index: 1;
+}
+
+.flight-stop:first-child .flight-node {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-accent) 18%, transparent);
+}
+
+.flight-body {
+  padding-top: 4px;
+}
+
+.flight-company-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+}
+
+.flight-company {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.flight-current {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.flight-title {
+  margin: 6px 0 8px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.flight-copy {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  position: relative;
+  background: color-mix(in oklab, var(--fg) 8%, var(--bg));
+  color: var(--fg);
+}
+
+.mark-atelier {
+  background: transparent;
+}
+
+.mark-disc {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+}
+
+.mark-disc-a {
+  left: 2px;
+  background: color-mix(in oklab, var(--fg) 88%, var(--bg));
+}
+
+.mark-disc-b {
+  right: 2px;
+  background: var(--color-accent);
+  opacity: 0.85;
+}
+
+.mark-svg {
+  width: 16px;
+  height: 16px;
+}
+
+.mark-star {
+  background: color-mix(in oklab, var(--color-accent) 16%, var(--bg));
+  color: var(--color-accent);
+}
+
+.mark-slash {
+  width: 14px;
+  height: 2px;
+  background: var(--fg);
+  transform: rotate(-28deg);
+}
+
+.mark-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.project-list {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.project {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.project-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--fg) 8%, var(--bg));
+}
+
+.project-name {
+  margin: 0 0 2px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.project-tag {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.cabin-footer {
+  position: relative;
+  z-index: 1;
+  padding: 8px 24px 48px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cabin-footer p {
+  margin: 0 0 6px;
+}
+
+@media (max-width: 720px) {
+  .plaque {
+    position: static;
+    padding: 28px 22px 0;
+  }
+
+  .cabin-main {
+    padding-top: 36px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .win-outer {
+    width: 156px;
+    height: 238px;
+    padding: 13px;
+    border-radius: 78px / 104px;
+  }
+
+  .hero {
+    margin-bottom: 56px;
+  }
+
+  .flight-head {
+    margin-left: 0;
+  }
+
+  .flight-list::before {
+    left: 18px;
+  }
+
+  .flight-stop {
+    grid-template-columns: 36px 1fr;
+    padding-left: 0;
+  }
+
+  .flight-meta {
+    grid-column: 2;
+    align-items: flex-start;
+    padding: 0 0 6px;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .flight-node {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    margin-top: 6px;
+  }
+
+  .flight-body {
+    grid-column: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-day,
+  .sky-dusk,
+  .sky-night {
+    animation: none;
+  }
+}
