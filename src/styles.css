@@ -164,8 +164,7 @@
   inset: 0;
   pointer-events: none;
   z-index: 40;
-  opacity: calc(0.045 - var(--tone) * 0.015);
-  mix-blend-mode: overlay;
+  opacity: calc(0.035 - var(--tone) * 0.012);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -265,7 +264,16 @@
   border-radius: 50%;
 }
 
-.ship-window[data-dragging="true"] {
+/* the pane is one hit target. Children that keep their own cursor, or a
+   CSS filter under the pointer, are what made the cursor flicker to a
+   black rectangle while it was moving */
+.ship-window * {
+  pointer-events: none;
+  cursor: inherit;
+}
+
+.ship-window[data-dragging="true"],
+.ship-window[data-dragging="true"] * {
   cursor: grabbing;
 }
 
@@ -352,10 +360,6 @@
       #9ba1a8 80%,
       #dfe2e6
     );
-  /* one dim source after dark: less light AND less contrast, never more */
-  filter: brightness(calc(1 - var(--tone) * 0.52))
-    contrast(calc(1 + var(--tone) * 0.06))
-    saturate(calc(1 - var(--tone) * 0.45));
   box-shadow:
     inset 1.5px 1.5px 2px rgb(255 255 255 / calc(0.5 - var(--tone) * 0.26)),
     inset -2px -2px 4px rgb(0 0 0 / calc(0.24 + var(--tone) * 0.2)),
@@ -363,15 +367,20 @@
 }
 
 .port-ring::before {
-  /* steel takes the colour of whatever is lighting it */
+  /* steel takes the colour of whatever is lighting it — a wash, not a
+     filter, so the cursor over the pane never goes through a filtered layer */
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 50%;
   pointer-events: none;
-  background: linear-gradient(152deg, #9db3d2, #47566d);
-  mix-blend-mode: color;
-  opacity: calc(var(--tone) * 0.5);
+  background:
+    rgb(4 7 12 / calc(var(--tone) * 0.5)),
+    linear-gradient(
+      152deg,
+      rgb(127 153 189 / calc(var(--tone) * 0.34)),
+      rgb(44 57 73 / calc(var(--tone) * 0.34))
+    );
 }
 
 .port-ring::after {
@@ -440,8 +449,8 @@
   border-radius: 50%;
   overflow: hidden;
   isolation: isolate;
+  contain: paint;
   background: #070d13;
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 
 /* the sea: real photographs, carried by the ship's slow motion */
@@ -450,12 +459,16 @@
   position: absolute;
   inset: -12%;
   animation: sea-swell 9.5s ease-in-out infinite alternate;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .sea-roll {
   position: absolute;
   inset: 0;
   animation: sea-roll var(--roll-period) ease-in-out infinite alternate;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 @keyframes sea-swell {
@@ -485,7 +498,6 @@
   object-position: 50% 50%;
   pointer-events: none;
   user-select: none;
-  will-change: opacity;
 }
 
 .sea-grade {
@@ -524,31 +536,47 @@
 /* linen roller blind */
 
 .blind {
+  /* the clip region is the glass; the sheet inside it is what moves */
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
   z-index: 2;
-  will-change: height;
-  filter: drop-shadow(
-    calc(var(--port) * 0.004) calc(var(--port) * 0.016)
-      calc(var(--port) * 0.026) rgb(0 0 0 / calc(0.42 - var(--tone) * 0.12))
-  );
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .blind-cloth {
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  /* one transform, on the compositor: no layout, no repaint of the pane */
+  transform: translate3d(
+    0,
+    calc(-100% + 14px + var(--hem, 0) * (100% - 14px)),
+    0
+  );
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
-.blind-weave {
-  /* anchored to the hem, so the weave travels with the fabric */
+.blind-hem {
+  /* the shadow the hem throws down the glass, in place of a filter that
+     would re-rasterise the whole blind on every frame of a drag */
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
-  height: 320px;
+  top: 100%;
+  height: calc(var(--port) * 0.06);
+  background: linear-gradient(
+    180deg,
+    rgb(0 0 0 / calc(0.36 - var(--tone) * 0.1)),
+    rgb(0 0 0 / calc(0.12 - var(--tone) * 0.04)) 40%,
+    transparent 100%
+  );
+}
+
+.blind-weave {
+  /* fills the sheet, so the weave travels with the fabric */
+  position: absolute;
+  inset: 0;
   background-color: color-mix(
     in oklab,
     color-mix(in oklab, #e8e1d4 calc((1 - var(--dusk) * 0.55) * 100%), #cdba9e)
@@ -609,14 +637,20 @@
 
 .blind-light {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: calc(var(--port) * 0.79);
-  mix-blend-mode: screen;
+  inset: 0;
   pointer-events: none;
+  transform: translate3d(
+    0,
+    calc(100% - 14px - var(--hem, 0) * (100% - 14px)),
+    0
+  );
+  opacity: clamp(
+    0,
+    calc(0.16 * var(--day-a, 1) + 0.62 * (var(--dusk-a, 1) - var(--day-a, 1))),
+    0.6
+  );
   background: radial-gradient(
-    ellipse 70% 42% at 50% 52%,
+    ellipse 70% 33% at 50% 41%,
     rgb(255 222 196 / 0.8) 0%,
     rgb(255 196 170 / 0.26) 38%,
     transparent 72%
@@ -626,6 +660,7 @@
 .blind-roll {
   position: absolute;
   top: 0;
+  z-index: 1;
   left: 0;
   right: 0;
   height: calc(var(--port) * 0.045);
@@ -643,12 +678,12 @@
   right: 0;
   bottom: -2px;
   height: 5px;
-  background: linear-gradient(160deg, #eceef0, #a0a6ad 46%, #666c73);
-  /* steel goes on taking the light after the cloth has given up on it — the
-     same terms as the ring's peg and the jacket's hook, so the three pieces
-     of hardware in the room stay the same metal at every hour */
-  filter: brightness(calc(1 - var(--tone) * 0.36))
-    saturate(calc(1 - var(--tone) * 0.35));
+  background: linear-gradient(
+    160deg,
+    color-mix(in oklab, #eceef0 calc((1 - var(--tone)) * 100%), #5c636b),
+    color-mix(in oklab, #a0a6ad calc((1 - var(--tone)) * 100%), #3e444b) 46%,
+    color-mix(in oklab, #666c73 calc((1 - var(--tone)) * 100%), #2a2e33)
+  );
   box-shadow:
     inset 0 0.5px 0 rgb(255 255 255 / calc(0.4 + var(--tone) * 0.24)),
     0 1px 0 rgb(0 0 0 / calc(0.35 + var(--tone) * 0.2));
@@ -669,12 +704,14 @@
   min-width: 30px;
   height: 13px;
   border-radius: 0 0 8px 8px;
+  transform: translateX(-50%) rotate(var(--tilt, 0deg));
   transform-origin: 50% 0;
-  background: linear-gradient(158deg, #e9ebee, #b9bfc5 40%, #82888f);
-  /* steel keeps more of its light than the cloth, the same way the peg and
-     the hook do — so the tab stays a piece of hardware on the frame */
-  filter: brightness(calc(1 - var(--tone) * 0.22))
-    saturate(calc(1 - var(--tone) * 0.28));
+  background: linear-gradient(
+    158deg,
+    color-mix(in oklab, #e9ebee calc((1 - var(--tone)) * 100%), #7a8188),
+    color-mix(in oklab, #b9bfc5 calc((1 - var(--tone)) * 100%), #4d545b) 40%,
+    color-mix(in oklab, #82888f calc((1 - var(--tone)) * 100%), #3a4046)
+  );
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / calc(0.42 + var(--tone) * 0.22)),
     inset 0 -1px 0 rgb(0 0 0 / 0.22),
@@ -705,8 +742,7 @@
   inset: 0;
   z-index: 3;
   pointer-events: none;
-  mix-blend-mode: screen;
-  opacity: calc((1 - var(--shade)) * 0.1);
+  opacity: calc((1 - var(--shade)) * 0.09);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 14 -10.6'/%3E%3CfeGaussianBlur stdDeviation='.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
   background-size: 100% 100%;
   -webkit-mask-image: radial-gradient(

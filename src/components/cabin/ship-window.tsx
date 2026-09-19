@@ -8,6 +8,7 @@ import {
   grabShade,
   persistShade,
   releaseShade,
+  setShadeTarget,
   useShadeStore,
 } from "@/store/shade";
 import { LifeJacket } from "./life-jacket";
@@ -15,6 +16,12 @@ import { LifeRing } from "./life-ring";
 
 const LIP_PX = 14; // the rolled fabric always shows under the head rail
 const SCREWS = 10;
+
+// The blind, the pull and the three sea frames read their position from custom
+// properties the simulation writes each frame, so a drag never re-renders this
+// component and never touches layout. These objects are constant on purpose.
+const DAY_STYLE = { opacity: "var(--day-a, 1)" } as React.CSSProperties;
+const DUSK_STYLE = { opacity: "var(--dusk-a, 1)" } as React.CSSProperties;
 
 /** where to let the blind come to rest after a throw */
 function restAt(pos: number) {
@@ -25,17 +32,42 @@ function restAt(pos: number) {
 
 export function ShipWindow() {
   const shade = useShadeStore((s) => s.shade);
-  const velocity = useShadeStore((s) => s.velocity);
   const dragging = useShadeStore((s) => s.dragging);
   const setDragging = useShadeStore((s) => s.setDragging);
 
+  const frameRef = useRef<HTMLDivElement>(null);
   const glassRef = useRef<HTMLDivElement>(null);
-  const live = useRef(false);
   const drag = useRef({
+    id: null as number | null,
     startY: 0,
     startShade: 0,
     samples: [] as { y: number; t: number }[],
   });
+
+  useEffect(() => {
+    setShadeTarget(frameRef.current);
+    return () => setShadeTarget(null);
+  }, []);
+
+  // A release the element never hears — outside the window, after a lost
+  // capture, or when the tab loses focus — still ends the drag.
+  useEffect(() => {
+    if (!dragging) return;
+    const bail = () => {
+      if (drag.current.id === null) return;
+      drag.current.id = null;
+      setDragging(false);
+      releaseShade(0, restAt);
+    };
+    window.addEventListener("pointerup", bail);
+    window.addEventListener("pointercancel", bail);
+    window.addEventListener("blur", bail);
+    return () => {
+      window.removeEventListener("pointerup", bail);
+      window.removeEventListener("pointercancel", bail);
+      window.removeEventListener("blur", bail);
+    };
+  }, [dragging, setDragging]);
 
   const span = () =>
     Math.max(
@@ -44,11 +76,16 @@ export function ShipWindow() {
     );
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    live.current = true;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    // one hand at a time: a second finger never hijacks a drag in progress
+    if (e.button !== 0 || drag.current.id !== null) return;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* capture is a nicety, not a requirement */
+    }
     grabShade();
     drag.current = {
+      id: e.pointerId,
       startY: e.clientY,
       startShade: useShadeStore.getState().shade,
       samples: [{ y: e.clientY, t: performance.now() }],
@@ -57,8 +94,8 @@ export function ShipWindow() {
   };
 
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!live.current) return;
     const d = drag.current;
+    if (d.id !== e.pointerId) return;
     const now = performance.now();
     d.samples.push({ y: e.clientY, t: now });
     while (d.samples.length > 2 && now - d.samples[0].t > 100)
@@ -67,15 +104,15 @@ export function ShipWindow() {
   };
 
   const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!live.current) return;
-    live.current = false;
+    const d = drag.current;
+    if (d.id !== e.pointerId) return;
+    d.id = null;
     setDragging(false);
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
       /* already released */
     }
-    const d = drag.current;
     const now = performance.now();
     const first = d.samples[0];
     const lastSample = d.samples[d.samples.length - 1];
@@ -93,6 +130,13 @@ export function ShipWindow() {
     const stale = now - lastSample.t > 80;
     const v = !stale && dt > 0.008 ? (lastSample.y - first.y) / span() / dt : 0;
     releaseShade(clamp(v, -9, 9), restAt);
+  };
+
+  const onLostCapture = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (drag.current.id !== e.pointerId) return;
+    drag.current.id = null;
+    setDragging(false);
+    releaseShade(0, restAt);
   };
 
   const onDoubleClick = () => {
@@ -119,20 +163,14 @@ export function ShipWindow() {
 
   useEffect(() => () => cancelShadeAnimation(), []);
 
-  // Photos are stacked night → dusk → day and peeled away in order, so there
-  // is always exactly one fully opaque frame underneath: no dim cross-dissolve.
-  // The three frames overlap rather than queue, so the sky is never holding
-  // still: day fades across the first half, dusk across almost the whole
-  // travel, and night is always underneath.
-  const dayA = 1 - smoothstep(0.02, 0.58, shade);
-  const duskA = 1 - smoothstep(0.36, 0.98, shade);
   const skyLabel = shade < 0.32 ? "Day" : shade < 0.68 ? "Dusk" : "Night";
   const valueNow = Math.round(shade * 100);
-
-  // sun glowing through the linen: strongest while the dusk frame is showing
-  const backlight = clamp(0.16 * dayA + 0.55 * (duskA - dayA), 0, 0.6);
-  // the pull swings against the direction of travel
-  const tilt = clamp(-velocity * 7, -10, 10);
+  // first paint — and the server's render — start where the simulation would
+  const initial = {
+    "--hem": shade.toFixed(4),
+    "--day-a": (1 - smoothstep(0.02, 0.58, shade)).toFixed(4),
+    "--dusk-a": (1 - smoothstep(0.36, 0.98, shade)).toFixed(4),
+  } as React.CSSProperties;
 
   return (
     <div className="window-block">
@@ -143,6 +181,8 @@ export function ShipWindow() {
 
         <div
           className="ship-window"
+          ref={frameRef}
+          style={initial}
           data-dragging={dragging ? "true" : "false"}
           role="slider"
           tabIndex={0}
@@ -156,6 +196,7 @@ export function ShipWindow() {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
+          onLostPointerCapture={onLostCapture}
           onDoubleClick={onDoubleClick}
           onKeyDown={onKeyDown}
         >
@@ -183,10 +224,7 @@ export function ShipWindow() {
                   </span>
                 );
               })}
-              <div
-                className="port-gasket"
-                style={{ "--hem": shade } as React.CSSProperties}
-              >
+              <div className="port-gasket">
                 <div className="port-glass" ref={glassRef}>
                   <div className="sea-swell">
                     <div className="sea-roll">
@@ -203,7 +241,7 @@ export function ShipWindow() {
                         draggable={false}
                         decoding="async"
                         className="sea-photo"
-                        style={{ opacity: duskA }}
+                        style={DUSK_STYLE}
                       />
                       <img
                         src={seaPhotos.day}
@@ -212,27 +250,23 @@ export function ShipWindow() {
                         decoding="async"
                         fetchPriority="high"
                         className="sea-photo"
-                        style={{ opacity: dayA }}
+                        style={DAY_STYLE}
                       />
                     </div>
                   </div>
                   <div className="sea-grade" aria-hidden="true" />
 
-                  <div
-                    className="blind"
-                    style={{
-                      height: `calc(${LIP_PX}px + ${shade} * (100% - ${LIP_PX}px))`,
-                    }}
-                  >
+                  {/* the cloth is a full-height sheet that slides on the
+                      compositor: its height never changes, so a drag costs
+                      no layout and no repaint of the glass */}
+                  <div className="blind" aria-hidden="true">
                     <div className="blind-cloth">
                       <div className="blind-weave" />
-                      <div
-                        className="blind-light"
-                        style={{ opacity: backlight }}
-                      />
-                      <div className="blind-roll" />
+                      <div className="blind-light" />
+                      <div className="blind-hem" />
+                      <div className="blind-rail" />
                     </div>
-                    <div className="blind-rail" />
+                    <div className="blind-roll" />
                   </div>
 
                   <div className="glass-salt" aria-hidden="true" />
@@ -243,13 +277,7 @@ export function ShipWindow() {
                 {/* sits on the gasket, not in the clipped pane — so at full
                     shade it still hangs proud of the steel ring instead of
                     disappearing under the sill */}
-                <span
-                  className="blind-pull"
-                  style={{
-                    transform: `translateX(-50%) rotate(${tilt}deg)`,
-                  }}
-                  aria-hidden="true"
-                >
+                <span className="blind-pull" aria-hidden="true">
                   <span className="blind-pull-grip" />
                 </span>
               </div>
