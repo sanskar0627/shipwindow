@@ -17,17 +17,28 @@ export function CabinApp() {
   useEffect(() => {
     const root = document.documentElement;
     root.style.setProperty("--shade", shade.toFixed(4));
-    // The room darkens on an S-curve and the ink flips over a short span, so
-    // text never sits on a same-tone background for long.
-    const tone = smoothstep(0, 1, smoothstep(0.2, 0.6, shade));
+
+    // One long S across the whole travel, so the room is always changing
+    // rather than sitting in a day, dusk or night preset.
+    const tone = smoothstep(0.02, 0.98, shade);
+
+    // Golden hour is a wide, quiet bell the light drifts through — it warms
+    // the room before it goes cool, and never arrives as its own scene.
+    const dusk = Math.exp(-(((shade - 0.46) / 0.34) ** 2));
+
+    // Type has to change value somewhere or dark letters vanish on a dark
+    // wall. It happens late and slowly, once the wall is already under the
+    // words, so the flip reads as light leaving rather than a repaint.
+    const ink = smoothstep(0.4, 0.74, shade);
+
     root.style.setProperty("--tone", tone.toFixed(4));
-    root.style.setProperty("--ink", smoothstep(0.37, 0.43, shade).toFixed(4));
-    root.style.setProperty(
-      "--dusk",
-      Math.exp(-(((shade - 0.45) / 0.18) ** 2)).toFixed(4),
-    );
-    root.style.setProperty("--night", smoothstep(0.55, 0.95, shade).toFixed(4));
-    root.style.colorScheme = shade > 0.5 ? "dark" : "light";
+    root.style.setProperty("--dusk", dusk.toFixed(4));
+    root.style.setProperty("--night", smoothstep(0.58, 1, shade).toFixed(4));
+    root.style.setProperty("--ink", ink.toFixed(4));
+    // 1 where text and wall are closest, 0 at both ends — a soft halo for
+    // the moment they pass, kept small so it never flashes as a third colour.
+    root.style.setProperty("--veil", (4 * ink * (1 - ink)).toFixed(4));
+    root.style.colorScheme = shade > 0.6 ? "dark" : "light";
   }, [shade]);
 
   return (

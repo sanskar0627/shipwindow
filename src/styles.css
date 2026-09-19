@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Newsreader", "Iowan Old Style", "Palatino Linotype", serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
 
   --color-cabin-day: #f3eee6;
   --color-cabin-night: #0a0d12;
   --color-ink-day: #1c1b19;
   --color-ink-night: #dcdee3;
-  --color-muted-day: #8a8680;
-  --color-muted-night: #7d848d;
   --color-accent: #3d6bff;
   --color-frame-day: #efeae2;
   --color-frame-night: #1e2228;
+  /* the colour the last of the sun leaves on everything in the room */
+  --color-goldenhour: #e0965f;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -34,27 +35,60 @@
     --ink: 0;
     --dusk: 0;
     --night: 0;
+    --veil: 0;
+    --hem: 0;
     --port: 218px;
     --roll-period: 14s;
+
+    /* Every surface is mixed twice: once down the day → night value ramp,
+       then once through the golden hour, which is what keeps the middle of
+       the travel a warm room at sunset instead of a grey one. */
+    --wall: color-mix(
+      in oklab,
+      color-mix(
+          in oklab,
+          var(--color-cabin-day) calc((1 - var(--tone)) * 100%),
+          var(--color-cabin-night)
+        )
+        /* The light goes fastest at the moment the type changes over, which
+           is both what dusk actually does and what stops the words and the
+           wall from ever arriving at the same value together. */
+        calc(100% - var(--veil) * 16%),
+      var(--color-cabin-night)
+    );
     --bg: color-mix(
       in oklab,
-      var(--color-cabin-day) calc((1 - var(--tone)) * 100%),
-      var(--color-cabin-night)
+      var(--wall) calc(100% - var(--dusk) * 19%),
+      var(--color-goldenhour)
     );
     --fg: color-mix(
       in oklab,
-      var(--color-ink-day) calc((1 - var(--ink)) * 100%),
-      var(--color-ink-night)
+      color-mix(
+          in oklab,
+          var(--color-ink-day) calc((1 - var(--ink)) * 100%),
+          var(--color-ink-night)
+        )
+        calc(100% - var(--dusk) * 9%),
+      var(--color-goldenhour)
     );
+    /* Secondary type is set as a fixed distance from the wall rather than as
+       its own colour, so it keeps the same relationship to the room at every
+       hour. Mixed absolutely it landed on the wall's own value halfway
+       through the travel and the labels simply went out. */
     --muted: color-mix(
       in oklab,
-      var(--color-muted-day) calc((1 - var(--ink)) * 100%),
-      var(--color-muted-night)
+      var(--fg) calc(55% + var(--veil) * 30%),
+      var(--bg)
     );
     --frame: color-mix(
       in oklab,
-      var(--color-frame-day) calc((1 - var(--tone)) * 100%),
-      var(--color-frame-night)
+      color-mix(
+          in oklab,
+          var(--color-frame-day) calc((1 - var(--tone)) * 100%),
+          var(--color-frame-night)
+        )
+        calc(100% - var(--dusk) * 15%),
+      var(--color-goldenhour)
     );
     --hairline: color-mix(in oklab, var(--fg) 14%, transparent);
     -webkit-font-smoothing: antialiased;
@@ -67,6 +101,10 @@
     background: var(--bg);
     color: var(--fg);
     font-family: var(--font-sans);
+    /* inherited, and zero at both ends of the travel: it only exists for the
+       moment the type and the wall pass each other in value */
+    text-shadow: 0 0 calc(var(--veil) * 12px)
+      rgb(6 9 14 / calc(var(--veil) * 0.28));
   }
 
   ::selection {
@@ -96,6 +134,12 @@
       rgb(255 249 236 / calc((1 - var(--tone)) * 0.34)),
       transparent 74%
     ),
+    /* the sun low enough to come in sideways and stain the wall */
+    radial-gradient(
+        96% 66% at 22% 4%,
+        rgb(240 158 96 / calc(var(--dusk) * 0.2)),
+        transparent 70%
+      ),
     radial-gradient(
       92% 76% at 16% -8%,
       rgb(164 188 226 / calc(var(--tone) * 0.085)),
@@ -381,6 +425,7 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
+  overflow: visible;
   padding: calc(var(--port) * 0.013);
   background: linear-gradient(152deg, #14171a, #0a0c0e 62%, #1c2024);
   box-shadow:
@@ -445,19 +490,35 @@
 
 .sea-grade {
   /* the view sits behind glass, inside a hull: cool cast, shaded at the rim,
-     with the frame's own shadow falling across the top of the picture */
+     with the frame's own shadow falling across the top of the picture — and
+     a warm film that comes and goes with the hour, so the three photographs
+     never meet as a hard cut */
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgb(4 10 18 / 0.3) 0%, transparent 15%),
+    linear-gradient(
+      180deg,
+      rgb(4 10 18 / calc(0.22 + var(--tone) * 0.14)) 0%,
+      transparent 16%
+    ),
     radial-gradient(
       118% 94% at 50% 24%,
       transparent 40%,
-      rgb(3 8 14 / 0.36) 100%
+      rgb(3 8 14 / calc(0.22 + var(--tone) * 0.2)) 100%
     ),
-    linear-gradient(0deg, rgb(24 46 72 / 0.06), rgb(24 46 72 / 0.06));
+    linear-gradient(
+      18deg,
+      rgb(232 140 72 / calc(var(--dusk) * 0.16)),
+      rgb(255 196 140 / calc(var(--dusk) * 0.05)) 46%,
+      transparent 72%
+    ),
+    linear-gradient(
+      0deg,
+      rgb(24 46 72 / calc(0.04 + var(--tone) * 0.05)),
+      rgb(24 46 72 / calc(0.04 + var(--tone) * 0.05))
+    );
 }
 
 /* linen roller blind */
@@ -583,29 +644,45 @@
   bottom: -2px;
   height: 5px;
   background: linear-gradient(160deg, #eceef0, #a0a6ad 46%, #666c73);
-  filter: brightness(calc(1 - var(--tone) * 0.58))
+  /* steel goes on taking the light after the cloth has given up on it — the
+     same terms as the ring's peg and the jacket's hook, so the three pieces
+     of hardware in the room stay the same metal at every hour */
+  filter: brightness(calc(1 - var(--tone) * 0.36))
     saturate(calc(1 - var(--tone) * 0.35));
-  box-shadow: 0 1px 0 rgb(0 0 0 / 0.35);
+  box-shadow:
+    inset 0 0.5px 0 rgb(255 255 255 / calc(0.4 + var(--tone) * 0.24)),
+    0 1px 0 rgb(0 0 0 / calc(0.35 + var(--tone) * 0.2));
 }
 
 .blind-pull {
+  /* lives on the gasket, outside the clipped pane: --hem is 0 at the lip
+     and 1 at the sill, so the tab always hangs just below the rail and
+     sits on the steel ring at night instead of vanishing under it */
   position: absolute;
   left: 50%;
-  top: 100%;
+  top: calc(
+    var(--port) * 0.013 + 14px + var(--hem, 0) *
+      (100% - var(--port) * 0.026 - 14px) + 2px
+  );
+  z-index: 8;
   width: calc(var(--port) * 0.14);
   min-width: 30px;
   height: 13px;
-  margin-top: -1px;
   border-radius: 0 0 8px 8px;
   transform-origin: 50% 0;
   background: linear-gradient(158deg, #e9ebee, #b9bfc5 40%, #82888f);
-  filter: brightness(calc(1 - var(--tone) * 0.52))
-    saturate(calc(1 - var(--tone) * 0.3));
+  /* steel keeps more of its light than the cloth, the same way the peg and
+     the hook do — so the tab stays a piece of hardware on the frame */
+  filter: brightness(calc(1 - var(--tone) * 0.22))
+    saturate(calc(1 - var(--tone) * 0.28));
   box-shadow:
-    0 2px 3px rgb(0 0 0 / 0.45),
-    inset 0 -1px 0 rgb(0 0 0 / 0.2);
+    inset 0 1px 0 rgb(255 255 255 / calc(0.42 + var(--tone) * 0.22)),
+    inset 0 -1px 0 rgb(0 0 0 / 0.22),
+    0 2px 3px rgb(0 0 0 / calc(0.4 + var(--tone) * 0.28)),
+    0 0 0 1px rgb(0 0 0 / calc(0.12 + var(--tone) * 0.18));
   display: grid;
   place-items: center;
+  pointer-events: none;
   transition: transform 0.7s var(--ease-spring);
 }
 
@@ -662,6 +739,12 @@
       rgb(206 220 242 / calc(0.035 + var(--tone) * 0.055)),
       transparent 74%
     ),
+    /* the last of the sun, sitting on the pane on the way through */
+    radial-gradient(
+        80% 56% at 62% 18%,
+        rgb(255 176 110 / calc(var(--dusk) * 0.1)),
+        transparent 70%
+      ),
     radial-gradient(
       70% 40% at 56% 106%,
       rgb(150 172 206 / calc(var(--tone) * 0.04)),
@@ -785,7 +868,7 @@
 }
 
 .lr-keywarm {
-  opacity: calc((1 - var(--tone)) * 0.88);
+  opacity: calc((1 - var(--tone)) * 0.55);
 }
 
 .lr-keycool {
@@ -793,25 +876,29 @@
 }
 
 .lr-bounce {
-  opacity: calc(0.08 + var(--tone) * 0.14);
+  opacity: calc(0.04 + var(--tone) * 0.14);
 }
 
-/* vinyl over foam: matte, so the specular is broad and soft, never a hotspot */
+/* vinyl over foam: matte, so the specular is broad and soft, never a hotspot.
+   By day the cabin is full of bounced light and there is no highlight to
+   pick a side; it only appears once there is one source left. */
 .lr-spec {
-  opacity: calc(0.26 + var(--tone) * 0.06);
+  opacity: calc(var(--tone) * 0.32);
   filter: blur(3.2px);
 }
 
+/* the occluded flank is a night thing. Any of it in daylight is what made
+   the east of the ring look crushed and the west washed out. */
 .lr-shade {
-  opacity: calc(0.3 + var(--tone) * 0.48);
+  opacity: calc(0.02 + var(--tone) * 0.74);
 }
 
 .lr-rim {
-  opacity: calc(0.1 + var(--tone) * 0.66);
+  opacity: calc(var(--tone) * 0.72);
 }
 
 .lr-tooth {
-  opacity: calc(0.55 - var(--tone) * 0.1);
+  opacity: calc(0.22 + var(--tone) * 0.08);
 }
 
 .lr-tapeglow {
@@ -977,31 +1064,36 @@
 /* ── Hero ── */
 
 .hero {
-  max-width: 36rem;
+  max-width: 38rem;
   text-align: center;
   margin-bottom: clamp(88px, 13vw, 168px);
 }
 
 .hero-title {
-  /* the one piece of display type above the fold, so it gets the scale and
-     the tight tracking that goes with it */
-  margin: 0 auto 18px;
-  max-width: 15ch;
-  font-size: clamp(1.7rem, 1.1rem + 2.3vw, 2.7rem);
+  /* The one piece of display type above the fold. Newsreader at a display
+     optical size: the serifs thin, the contrast rises, and the two lines
+     sit as a block rather than a paragraph. */
+  margin: 0 auto 20px;
+  max-width: 14ch;
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-size: clamp(2.05rem, 1.2rem + 3.1vw, 3.25rem);
   font-weight: 500;
-  letter-spacing: -0.035em;
-  line-height: 1.1;
+  letter-spacing: -0.022em;
+  line-height: 1.06;
   text-wrap: balance;
   color: var(--fg);
 }
 
 .hero-blurb {
-  /* a measure short enough to read in two lines at almost every width */
+  /* a measure short enough to read in two lines at almost every width, and
+     a size and leading set against the title rather than at a default */
   margin: 0 auto;
-  max-width: 31rem;
-  font-size: clamp(0.98rem, 0.94rem + 0.2vw, 1.08rem);
-  line-height: 1.6;
-  letter-spacing: -0.005em;
+  max-width: 28rem;
+  font-size: clamp(0.98rem, 0.94rem + 0.22vw, 1.08rem);
+  font-weight: 400;
+  line-height: 1.64;
+  letter-spacing: -0.011em;
   color: var(--muted);
   text-wrap: pretty;
 }

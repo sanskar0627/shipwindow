@@ -16,22 +16,10 @@ import { LifeRing } from "./life-ring";
 const LIP_PX = 14; // the rolled fabric always shows under the head rail
 const SCREWS = 10;
 
-// Around 40% the page is mid-crossover; the shade can pass it but never rests there.
-const CROSS_LO = 0.35;
-const CROSS_HI = 0.46;
-const settle = (s: number, dir = 0) =>
-  s > CROSS_LO && s < CROSS_HI
-    ? dir > 0 || (dir === 0 && s >= (CROSS_LO + CROSS_HI) / 2)
-      ? CROSS_HI
-      : CROSS_LO
-    : s;
-
 /** where to let the blind come to rest after a throw */
 function restAt(pos: number) {
   if (pos < 0.05) return animateShadeTo(0, { click: false });
   if (pos > 0.95) return animateShadeTo(1, { click: false });
-  const s = settle(pos);
-  if (s !== pos) return animateShadeTo(s, { click: false });
   persistShade(pos);
 }
 
@@ -126,17 +114,19 @@ export function ShipWindow() {
     const hit = keys[e.key];
     if (!hit) return;
     e.preventDefault();
-    const next = clamp(hit[0], 0, 1);
-    animateShadeTo(settle(next, Math.sign(next - s)), { click: hit[1] });
+    animateShadeTo(clamp(hit[0], 0, 1), { click: hit[1] });
   };
 
   useEffect(() => () => cancelShadeAnimation(), []);
 
   // Photos are stacked night → dusk → day and peeled away in order, so there
   // is always exactly one fully opaque frame underneath: no dim cross-dissolve.
-  const dayA = 1 - smoothstep(0.1, 0.46, shade);
-  const duskA = 1 - smoothstep(0.5, 0.86, shade);
-  const skyLabel = shade < 0.28 ? "Day" : shade < 0.62 ? "Dusk" : "Night";
+  // The three frames overlap rather than queue, so the sky is never holding
+  // still: day fades across the first half, dusk across almost the whole
+  // travel, and night is always underneath.
+  const dayA = 1 - smoothstep(0.02, 0.58, shade);
+  const duskA = 1 - smoothstep(0.36, 0.98, shade);
+  const skyLabel = shade < 0.32 ? "Day" : shade < 0.68 ? "Dusk" : "Night";
   const valueNow = Math.round(shade * 100);
 
   // sun glowing through the linen: strongest while the dusk frame is showing
@@ -193,7 +183,10 @@ export function ShipWindow() {
                   </span>
                 );
               })}
-              <div className="port-gasket">
+              <div
+                className="port-gasket"
+                style={{ "--hem": shade } as React.CSSProperties}
+              >
                 <div className="port-glass" ref={glassRef}>
                   <div className="sea-swell">
                     <div className="sea-roll">
@@ -228,7 +221,7 @@ export function ShipWindow() {
                   <div
                     className="blind"
                     style={{
-                      height: `calc(${LIP_PX}px + ${shade} * (100% - ${LIP_PX - 7}px))`,
+                      height: `calc(${LIP_PX}px + ${shade} * (100% - ${LIP_PX}px))`,
                     }}
                   >
                     <div className="blind-cloth">
@@ -239,23 +232,26 @@ export function ShipWindow() {
                       />
                       <div className="blind-roll" />
                     </div>
-                    <div className="blind-rail">
-                      <span
-                        className="blind-pull"
-                        style={{
-                          transform: `translateX(-50%) rotate(${tilt}deg)`,
-                        }}
-                        aria-hidden="true"
-                      >
-                        <span className="blind-pull-grip" />
-                      </span>
-                    </div>
+                    <div className="blind-rail" />
                   </div>
 
                   <div className="glass-salt" aria-hidden="true" />
                   <div className="glass-reflect" aria-hidden="true" />
                   <div className="glass-edge" aria-hidden="true" />
                 </div>
+
+                {/* sits on the gasket, not in the clipped pane — so at full
+                    shade it still hangs proud of the steel ring instead of
+                    disappearing under the sill */}
+                <span
+                  className="blind-pull"
+                  style={{
+                    transform: `translateX(-50%) rotate(${tilt}deg)`,
+                  }}
+                  aria-hidden="true"
+                >
+                  <span className="blind-pull-grip" />
+                </span>
               </div>
             </div>
           </div>

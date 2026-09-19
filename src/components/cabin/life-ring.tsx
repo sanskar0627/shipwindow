@@ -60,20 +60,23 @@ export function LifeRing() {
               cy={CY}
               r={OUTER}
             >
-              <stop offset={INNER / OUTER} stopColor="#000" stopOpacity="0.5" />
-              <stop offset="0.64" stopColor="#000" stopOpacity="0.26" />
-              <stop offset="0.71" stopColor="#000" stopOpacity="0.05" />
-              <stop offset="0.79" stopColor="#fff" stopOpacity="0.1" />
-              <stop offset="0.88" stopColor="#000" stopOpacity="0.1" />
-              <stop offset="0.95" stopColor="#000" stopOpacity="0.3" />
-              <stop offset="1" stopColor="#000" stopOpacity="0.54" />
+              {/* darken the rims only — a white crown on the tube is what
+                  bleached the east and west paint and made them look faded */}
+              <stop
+                offset={INNER / OUTER}
+                stopColor="#000"
+                stopOpacity="0.22"
+              />
+              <stop offset="0.68" stopColor="#000" stopOpacity="0.06" />
+              <stop offset="0.8" stopColor="#000" stopOpacity="0" />
+              <stop offset="0.92" stopColor="#000" stopOpacity="0.06" />
+              <stop offset="1" stopColor="#000" stopOpacity="0.2" />
             </radialGradient>
 
-            {/* one key, upper left: warm while there is daylight in the room,
-                cool once there is only the moon */}
-            <radialGradient id="lr-keywarm" cx="0.26" cy="0.16" r="0.82">
-              <stop offset="0" stopColor="#fff7e8" stopOpacity="0.5" />
-              <stop offset="0.46" stopColor="#fff0d8" stopOpacity="0.13" />
+            {/* a wide, even wash of daylight: enough to say the room is lit,
+                not so tight that one quadrant reads as a different colour */}
+            <radialGradient id="lr-keywarm" cx="0.5" cy="0.42" r="0.92">
+              <stop offset="0" stopColor="#fff7e8" stopOpacity="0.16" />
               <stop offset="1" stopColor="#fff0d8" stopOpacity="0" />
             </radialGradient>
             <radialGradient id="lr-keycool" cx="0.24" cy="0.13" r="0.8">
@@ -84,8 +87,8 @@ export function LifeRing() {
 
             {/* the flank that turns away from it */}
             <linearGradient id="lr-occlude" x1="0.18" y1="0.06" x2="1" y2="1">
-              <stop offset="0.34" stopColor="#000" stopOpacity="0" />
-              <stop offset="1" stopColor="#04060b" stopOpacity="0.58" />
+              <stop offset="0.46" stopColor="#000" stopOpacity="0" />
+              <stop offset="1" stopColor="#04060b" stopOpacity="0.5" />
             </linearGradient>
             {/* what the deck throws back up at it */}
             <linearGradient id="lr-bounce" x1="0" y1="1" x2="0.2" y2="0.35">
@@ -222,7 +225,7 @@ export function LifeRing() {
               cy={CY}
               r={R}
               fill="none"
-              stroke="#cd5620"
+              stroke="#d15a1f"
               strokeWidth={W}
               strokeDasharray={`${QUAD} ${QUAD}`}
               strokeDashoffset={-(C * 22.5) / 360}
