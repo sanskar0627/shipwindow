@@ -1,12 +1,12 @@
 export const identity = {
-  name: "Nia Solis",
-  city: "Lisbon, PT",
-  lat: "38.7223° N",
-  lng: "9.1393° W",
-  tz: "Europe/Lisbon",
-  role: "Software Designer & Creative Technologist",
+  name: "Sanskar Shukla",
+  city: "Bengaluru, IN",
+  lat: "12.9716° N",
+  lng: "77.5946° E",
+  tz: "Asia/Kolkata",
+  role: "Software Developer & Designer",
   blurb:
-    "Pushing pixels for 8 years with an engineering mindset, obsessing over the details and the why behind great products.",
+    "I've been building software and digital experiences for the past year.",
 };
 
 /**
@@ -19,3 +19,31 @@ export const seaPhotos = {
   dusk: "/ocean/dusk.webp",
   night: "/ocean/night.webp",
 };
+
+export type Port = {
+  company: string;
+  role: string;
+  from: string;
+  to: string;
+  current?: boolean;
+  copy: string;
+};
+
+/** In sailing order: the route reads left to right, the ship sits at today. */
+export const voyage: Port[] = [
+  {
+    company: "M81",
+    role: "Full-Stack Developer",
+    from: "07.2026",
+    to: "12.2026",
+    copy: "Client websites and internal automation tools, taken end to end from data model to the last pixel.",
+  },
+  {
+    company: "Senzary",
+    role: "Software Developer",
+    from: "01.2026",
+    to: "Present",
+    current: true,
+    copy: "Production IoT infrastructure: device pipelines, rule chains and the services that keep a fleet of sensors reporting.",
+  },
+];

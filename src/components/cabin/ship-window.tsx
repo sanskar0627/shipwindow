@@ -11,6 +11,7 @@ import {
   useShadeStore,
 } from "@/store/shade";
 import { LifeJacket } from "./life-jacket";
+import { LifeRing } from "./life-ring";
 
 const LIP_PX = 14; // the rolled fabric always shows under the head rail
 const SCREWS = 10;
@@ -146,6 +147,7 @@ export function ShipWindow() {
   return (
     <div className="window-block">
       <div className="bulkhead">
+        <LifeRing />
         <LifeJacket />
 
         <div
@@ -168,15 +170,28 @@ export function ShipWindow() {
         >
           <div className="port-outer">
             <div className="port-ring">
-              {Array.from({ length: SCREWS }, (_, i) => (
-                <span
-                  key={i}
-                  className="port-screw"
-                  style={{ transform: `rotate(${(360 / SCREWS) * i + 18}deg)` }}
-                >
-                  <i />
-                </span>
-              ))}
+              {Array.from({ length: SCREWS }, (_, i) => {
+                const angle = (360 / SCREWS) * i + 18;
+                // only the screws turned toward the key catch it
+                const lit = Math.max(
+                  0,
+                  Math.cos(((angle - 225) * Math.PI) / 180),
+                );
+                return (
+                  <span
+                    key={i}
+                    className="port-screw"
+                    style={
+                      {
+                        transform: `rotate(${angle}deg)`,
+                        "--lit": (0.34 + 0.66 * lit).toFixed(3),
+                      } as React.CSSProperties
+                    }
+                  >
+                    <i />
+                  </span>
+                );
+              })}
               <div className="port-gasket">
                 <div className="port-glass" ref={glassRef}>
                   <div className="sea-swell">
@@ -237,7 +252,7 @@ export function ShipWindow() {
                   </div>
 
                   <div className="glass-salt" aria-hidden="true" />
-                  <div className="glass-sheen" aria-hidden="true" />
+                  <div className="glass-reflect" aria-hidden="true" />
                   <div className="glass-edge" aria-hidden="true" />
                 </div>
               </div>
