@@ -3,12 +3,16 @@
  *
  * Built the way the object is built: a moulded foam torus in the regulation
  * proportion (outer Ø 750 : inner Ø 440, so the tube is a fifth of the whole),
- * four painted quadrants, four strips of retro-reflective tape across the
- * tube, and a grab line seized at four points and left slack between them.
+ * four painted quadrants and four strips of retro-reflective tape across the
+ * tube. No grab line — stowed rings are often shipped without one, and the
+ * bare torus is the cleaner read against this wall.
+ *
+ * It hangs square: the bracket is on the centre line, the paint and tape are
+ * symmetric about it, and the roll swings it evenly either side of vertical.
  *
  * The shading is modelled here rather than dialled in with a brightness
  * filter, because the filter is what made it read as a sticker after dark: it
- * crushed paint, tape and rope to one value at once. Instead the layers go in
+ * crushed paint, tape and foam to one value at once. Instead the layers go in
  * the order light actually arrives — albedo, the round of the tube, the night
  * wash, then the one key from the upper left, its specular along the crown,
  * the occluded flank, and last the cool edges the moonlight leaves. Only the
@@ -34,18 +38,7 @@ const at = (deg: number, r: number): [number, number] => [
 ];
 const n = (v: number) => v.toFixed(2);
 
-const SPIN = `rotate(8 ${CX} ${CY})`;
-
-const SEIZINGS = [0, 90, 180, 270]; // where the grab line is made fast
 const TAPES = [45, 135, 225, 315]; // retro-reflective, on the painted quadrants
-
-/** the grab line hangs slack between its seizings */
-function swag(fromDeg: number, toDeg: number) {
-  const [x1, y1] = at(fromDeg, OUTER - 2);
-  const [x2, y2] = at(toDeg, OUTER - 2);
-  const [cx, cy] = at((fromDeg + toDeg) / 2, 96);
-  return `M${n(x1)} ${n(y1)} Q${n(cx)} ${n(cy)} ${n(x2)} ${n(y2)}`;
-}
 
 export function LifeRing() {
   return (
@@ -100,10 +93,13 @@ export function LifeRing() {
               <stop offset="1" stopColor="#7d94bb" stopOpacity="0" />
             </linearGradient>
 
-            {/* moonlight only reaches the room through this much wash */}
+            {/* moonlight only reaches the room through this much wash. It is
+                pitched to land the foam and the paint on the same values as
+                the lifejacket across the porthole, so the two read as one
+                room rather than two drawings */}
             <linearGradient id="lr-nightwash" x1="0.1" y1="0" x2="0.9" y2="1">
-              <stop offset="0" stopColor="#141b26" />
-              <stop offset="1" stopColor="#080b12" />
+              <stop offset="0" stopColor="#1e2029" />
+              <stop offset="1" stopColor="#10121a" />
             </linearGradient>
 
             <linearGradient id="lr-steel" x1="0.1" y1="0" x2="0.9" y2="1">
@@ -184,15 +180,20 @@ export function LifeRing() {
             />
             <circle cx={CX - 4.6} cy="12" r="1.1" fill="#4b5157" />
             <circle cx={CX + 4.6} cy="12" r="1.1" fill="#4b5157" />
-            <path
-              d={`M${CX - 2.7} 14 V58 q0 4.4 4.4 4.4 h1`}
-              fill="none"
-              stroke="url(#lr-steel)"
-              strokeWidth="5.4"
-              strokeLinecap="round"
+            {/* the peg is on the centre line, so the ring hangs square to it.
+                A rect, not a stroked path: a dead-vertical path has no width
+                to hang an objectBoundingBox gradient on */}
+            <rect
+              x={CX - 2.7}
+              y="13"
+              width="5.4"
+              height="48"
+              rx="2.7"
+              fill="url(#lr-steel)"
             />
+            <circle cx={CX} cy="61" r="3.4" fill="url(#lr-steel)" />
             <path
-              d={`M${CX - 4.3} 15 V57`}
+              d={`M${CX - 1.6} 15 V58`}
               stroke="#fff"
               strokeOpacity="0.4"
               strokeWidth="0.9"
@@ -214,70 +215,65 @@ export function LifeRing() {
           </g>
 
           <g mask="url(#lr-tube)">
-            {/* ── albedo: foam, paint, tape. Turned a few degrees off square,
-                 because it is hung rather than mounted — and because square
-                 quadrants are most of what makes a ring read as a logo. The
-                 light below stays put; only the object turns. ── */}
-            <g transform={SPIN}>
-              <rect width={VW} height={VH} fill="#e7e1d3" />
-              <circle
-                cx={CX}
-                cy={CY}
-                r={R}
-                fill="none"
-                stroke="#cd5620"
-                strokeWidth={W}
-                strokeDasharray={`${QUAD} ${QUAD}`}
-                strokeDashoffset={-(C * 22.5) / 360}
-              />
-              {/* a hair of relief where paint meets foam */}
-              <circle
-                cx={CX}
-                cy={CY}
-                r={R}
-                fill="none"
-                stroke="#000"
-                strokeOpacity="0.16"
-                strokeWidth={W}
-                strokeDasharray={`1 ${QUAD - 1}`}
-                strokeDashoffset={-(C * 22.5) / 360}
-              />
+            {/* ── albedo: foam, paint, tape ── */}
+            <rect width={VW} height={VH} fill="#e7e1d3" />
+            <circle
+              cx={CX}
+              cy={CY}
+              r={R}
+              fill="none"
+              stroke="#cd5620"
+              strokeWidth={W}
+              strokeDasharray={`${QUAD} ${QUAD}`}
+              strokeDashoffset={-(C * 22.5) / 360}
+            />
+            {/* a hair of relief where paint meets foam */}
+            <circle
+              cx={CX}
+              cy={CY}
+              r={R}
+              fill="none"
+              stroke="#000"
+              strokeOpacity="0.16"
+              strokeWidth={W}
+              strokeDasharray={`1 ${QUAD - 1}`}
+              strokeDashoffset={-(C * 22.5) / 360}
+            />
 
-              <g className="lr-tape">
-                {TAPES.map((deg) => {
-                  const [x, y] = at(deg, R);
-                  return (
-                    <g
-                      key={deg}
-                      transform={`translate(${n(x)} ${n(y)}) rotate(${deg})`}
-                    >
-                      <rect
-                        x="-3.8"
-                        y={-(W / 2 + 1)}
-                        width="7.6"
-                        height={W + 2}
-                        fill="#b4bac1"
-                      />
-                      <rect
-                        x="-3.8"
-                        y={-(W / 2 + 1)}
-                        width="0.8"
-                        height={W + 2}
-                        fill="#000"
-                        fillOpacity="0.26"
-                      />
-                      <rect
-                        x="3"
-                        y={-(W / 2 + 1)}
-                        width="0.8"
-                        height={W + 2}
-                        fill="#000"
-                        fillOpacity="0.26"
-                      />
-                    </g>
-                  );
-                })}
-              </g>
+            <g className="lr-tape">
+              {TAPES.map((deg) => {
+                const [x, y] = at(deg, R);
+                return (
+                  <g
+                    key={deg}
+                    transform={`translate(${n(x)} ${n(y)}) rotate(${deg})`}
+                  >
+                    <rect
+                      x="-3.8"
+                      y={-(W / 2 + 1)}
+                      width="7.6"
+                      height={W + 2}
+                      fill="#b4bac1"
+                    />
+                    <rect
+                      x="-3.8"
+                      y={-(W / 2 + 1)}
+                      width="0.8"
+                      height={W + 2}
+                      fill="#000"
+                      fillOpacity="0.26"
+                    />
+                    <rect
+                      x="3"
+                      y={-(W / 2 + 1)}
+                      width="0.8"
+                      height={W + 2}
+                      fill="#000"
+                      fillOpacity="0.26"
+                    />
+                  </g>
+                );
+              })}
             </g>
 
             <rect
@@ -329,7 +325,7 @@ export function LifeRing() {
 
             {/* tape is retro-reflective: after dark it is the brightest thing
                 on the ring, and the last detail to go */}
-            <g className="lr-tapeglow" transform={SPIN}>
+            <g className="lr-tapeglow">
               {TAPES.map((deg) => {
                 const [x, y] = at(deg, R);
                 return (
@@ -375,76 +371,6 @@ export function LifeRing() {
               strokeWidth="1.3"
               mask="url(#lr-far)"
             />
-          </g>
-
-          {/* ── grab line: seized at four points, slack between them ── */}
-          <g className="lr-rope" transform={SPIN}>
-            {SEIZINGS.map((deg) => (
-              <g key={`swag${deg}`}>
-                <path
-                  d={swag(deg, deg + 90)}
-                  fill="none"
-                  stroke="#4d442f"
-                  strokeWidth="2.7"
-                  strokeLinecap="round"
-                />
-                <path
-                  d={swag(deg, deg + 90)}
-                  fill="none"
-                  stroke="#9c8e70"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                />
-                {/* the lay of the rope */}
-                <path
-                  className="lr-lay"
-                  d={swag(deg, deg + 90)}
-                  fill="none"
-                  stroke="#5d5238"
-                  strokeWidth="1.9"
-                  strokeDasharray="1 2.1"
-                  strokeLinecap="butt"
-                />
-                <path
-                  className="lr-ropelit"
-                  d={swag(deg, deg + 90)}
-                  fill="none"
-                  stroke="#d8cdae"
-                  strokeWidth="0.8"
-                  strokeLinecap="round"
-                  mask="url(#lr-lit)"
-                />
-              </g>
-            ))}
-
-            {/* whipped cord, three turns across the tube, holding it fast */}
-            {SEIZINGS.map((deg) => {
-              const [x, y] = at(deg, R);
-              const reach = W / 2 + 1.6;
-              return (
-                <g
-                  key={`seize${deg}`}
-                  transform={`translate(${n(x)} ${n(y)}) rotate(${deg})`}
-                >
-                  {[-2.4, 0, 2.4].map((off) => (
-                    <g key={off}>
-                      <path
-                        d={`M${off} ${-reach} L${off} ${reach}`}
-                        stroke="#453d2b"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d={`M${off - 0.35} ${-reach + 0.6} L${off - 0.35} ${reach - 0.6}`}
-                        stroke="#b5a884"
-                        strokeWidth="1"
-                        strokeLinecap="round"
-                      />
-                    </g>
-                  ))}
-                </g>
-              );
-            })}
           </g>
         </svg>
       </div>
