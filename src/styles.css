@@ -757,11 +757,13 @@
      heavier object, so it swings less than the jacket */
   animation: ring-sway var(--roll-period) ease-in-out infinite alternate;
   animation-delay: -4.5s;
-  transform-origin: 50% 13%;
+  transform-origin: 50% 8%;
+  /* a dim source casts a soft shadow, but the bulkhead behind is never black,
+     so the shadow has to get *deeper* after dark, not fainter, to still read
+     as contact */
   filter: drop-shadow(
-    calc(3px + var(--tone) * 1px) calc(7px - var(--tone) * 2px)
-      calc(7px + var(--tone) * 7px)
-      rgb(20 16 12 / calc(0.24 - var(--tone) * 0.14))
+    calc(3px + var(--tone) * 2px) calc(7px - var(--tone) * 1px)
+      calc(7px + var(--tone) * 6px) rgb(3 5 10 / calc(0.24 + var(--tone) * 0.3))
   );
 }
 
@@ -769,35 +771,72 @@
   display: block;
   width: 100%;
   height: auto;
-  /* white foam would glow at night, so it loses more value than the jacket */
-  filter: brightness(calc(1 - var(--tone) * 0.72))
-    saturate(calc(1 - var(--tone) * 0.2));
+  /* the modelling lives in the SVG (see the component), so the only thing
+     left to do globally is let the chroma fall with the light */
+  filter: saturate(calc(1 - var(--tone) * 0.24));
 }
 
-.lr-cool {
-  /* moonlight is cool; white paint shows that first */
-  opacity: calc(var(--tone) * 0.38);
+/* moonlight is all that is left, and it is cool and very little of it */
+.lr-night {
+  opacity: calc(var(--tone) * 0.83);
 }
 
-.lr-key {
-  opacity: calc(0.32 + var(--tone) * 0.42);
+.lr-keywarm {
+  opacity: calc((1 - var(--tone)) * 0.88);
+}
+
+.lr-keycool {
+  opacity: calc(var(--tone) * 0.62);
+}
+
+.lr-bounce {
+  opacity: calc(0.08 + var(--tone) * 0.14);
+}
+
+/* vinyl over foam: matte, so the specular is broad and soft, never a hotspot */
+.lr-spec {
+  opacity: calc(0.26 + var(--tone) * 0.06);
+  filter: blur(3.2px);
 }
 
 .lr-shade {
-  opacity: calc(0.32 + var(--tone) * 0.5);
+  opacity: calc(0.3 + var(--tone) * 0.48);
 }
 
-.lr-roll {
-  opacity: calc(0.14 + var(--tone) * 0.26);
-  filter: blur(1.6px);
+.lr-rim {
+  opacity: calc(0.1 + var(--tone) * 0.66);
 }
 
+.lr-tooth {
+  opacity: calc(0.55 - var(--tone) * 0.1);
+}
+
+.lr-tapeglow {
+  opacity: calc(0.05 + var(--tone) * 0.17);
+}
+
+/* manila takes the light the same way the foam does, and loses it as fast */
 .lr-rope {
-  opacity: calc(0.9 - var(--tone) * 0.3);
+  filter: brightness(calc(1 - var(--tone) * 0.8))
+    saturate(calc(1 - var(--tone) * 0.4));
+}
+
+.lr-lay {
+  opacity: 0.55;
+}
+
+.lr-ropelit {
+  opacity: calc(0.45 + var(--tone) * 0.45);
+}
+
+.lr-castshadow {
+  opacity: calc(0.34 + var(--tone) * 0.24);
 }
 
 .lr-peg {
-  filter: brightness(calc(1 - var(--tone) * 0.18));
+  /* steel keeps taking the light after the foam has given up on it */
+  filter: brightness(calc(1 - var(--tone) * 0.62))
+    saturate(calc(1 - var(--tone) * 0.45));
 }
 
 .lifejacket-body,

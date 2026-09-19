@@ -1,33 +1,50 @@
 /**
- * Lifebuoy on its bracket, port side of the porthole and a little lower.
+ * SOLAS ring buoy on its bracket, port side of the porthole and a little lower.
  *
- * Built the way the object is built: a foam torus, four painted quadrants that
- * follow it, a grab line laced at four points and draped between them. Shading
- * is layered like everything else on this wall — first the form of the tube
- * itself (a radial pass, bright along the crown, dark at both edges), then the
- * one key light from the upper left.
+ * Built the way the object is built: a moulded foam torus in the regulation
+ * proportion (outer Ø 750 : inner Ø 440, so the tube is a fifth of the whole),
+ * four painted quadrants, four strips of retro-reflective tape across the
+ * tube, and a grab line seized at four points and left slack between them.
+ *
+ * The shading is modelled here rather than dialled in with a brightness
+ * filter, because the filter is what made it read as a sticker after dark: it
+ * crushed paint, tape and rope to one value at once. Instead the layers go in
+ * the order light actually arrives — albedo, the round of the tube, the night
+ * wash, then the one key from the upper left, its specular along the crown,
+ * the occluded flank, and last the cool edges the moonlight leaves. Only the
+ * layers above the wash survive into the dark, which is what keeps it an
+ * object and not a silhouette.
  */
 
-const CX = 65;
-const CY = 78;
-const R = 42; // centre line of the tube
-const W = 20; // tube thickness
-const OUTER = R + W / 2;
+const CX = 74;
+const CY = 90;
+const R = 46; // centre line of the tube
+const W = 24; // tube thickness
+const OUTER = R + W / 2; // 58
+const INNER = R - W / 2; // 34 — the eye, 0.59 of the outer, as regulation
 const C = 2 * Math.PI * R;
-const BAND = C / 8; // four painted quadrants, four bare ones
+const QUAD = C / 8; // four painted quadrants, four bare ones
+const VW = 148;
+const VH = 168;
 
 const rad = (deg: number) => ((deg - 90) * Math.PI) / 180;
 const at = (deg: number, r: number): [number, number] => [
   CX + Math.cos(rad(deg)) * r,
   CY + Math.sin(rad(deg)) * r,
 ];
+const n = (v: number) => v.toFixed(2);
 
-/** the grab line drapes outward between its lacing points */
-function ropeSwag(fromDeg: number, toDeg: number) {
-  const [x1, y1] = at(fromDeg, R + 9);
-  const [x2, y2] = at(toDeg, R + 9);
-  const [cx, cy] = at((fromDeg + toDeg) / 2, OUTER + 16);
-  return `M${x1.toFixed(1)} ${y1.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+const SPIN = `rotate(8 ${CX} ${CY})`;
+
+const SEIZINGS = [0, 90, 180, 270]; // where the grab line is made fast
+const TAPES = [45, 135, 225, 315]; // retro-reflective, on the painted quadrants
+
+/** the grab line hangs slack between its seizings */
+function swag(fromDeg: number, toDeg: number) {
+  const [x1, y1] = at(fromDeg, OUTER - 2);
+  const [x2, y2] = at(toDeg, OUTER - 2);
+  const [cx, cy] = at((fromDeg + toDeg) / 2, 96);
+  return `M${n(x1)} ${n(y1)} Q${n(cx)} ${n(cy)} ${n(x2)} ${n(y2)}`;
 }
 
 export function LifeRing() {
@@ -36,45 +53,96 @@ export function LifeRing() {
       <div className="lifering-sway">
         <svg
           className="lifering-body"
-          viewBox="0 0 130 142"
+          viewBox={`0 0 ${VW} ${VH}`}
           role="presentation"
         >
           <defs>
-            {/* the cross-section of the tube: dark at both edges, bright along
-                the crown — what makes it read as round rather than flat */}
+            {/* the cross-section of the tube: dark where it turns away at
+                both edges, bright along the crown — what makes it read as
+                round rather than flat */}
             <radialGradient
-              id="lr-tube"
+              id="lr-form"
               gradientUnits="userSpaceOnUse"
               cx={CX}
               cy={CY}
               r={OUTER}
             >
-              <stop
-                offset={(R - W / 2) / OUTER}
-                stopColor="#000"
-                stopOpacity="0.46"
-              />
-              <stop offset="0.68" stopColor="#000" stopOpacity="0.1" />
-              <stop offset="0.76" stopColor="#fff" stopOpacity="0.15" />
-              <stop offset="0.84" stopColor="#fff" stopOpacity="0.09" />
-              <stop offset="0.93" stopColor="#000" stopOpacity="0.1" />
-              <stop offset="1" stopColor="#000" stopOpacity="0.44" />
+              <stop offset={INNER / OUTER} stopColor="#000" stopOpacity="0.5" />
+              <stop offset="0.64" stopColor="#000" stopOpacity="0.26" />
+              <stop offset="0.71" stopColor="#000" stopOpacity="0.05" />
+              <stop offset="0.79" stopColor="#fff" stopOpacity="0.1" />
+              <stop offset="0.88" stopColor="#000" stopOpacity="0.1" />
+              <stop offset="0.95" stopColor="#000" stopOpacity="0.3" />
+              <stop offset="1" stopColor="#000" stopOpacity="0.54" />
             </radialGradient>
-            <radialGradient id="lr-key" cx="0.28" cy="0.2" r="0.78">
-              <stop offset="0" stopColor="#fffaf0" stopOpacity="0.5" />
-              <stop offset="0.5" stopColor="#fff2de" stopOpacity="0.12" />
-              <stop offset="1" stopColor="#fff2de" stopOpacity="0" />
+
+            {/* one key, upper left: warm while there is daylight in the room,
+                cool once there is only the moon */}
+            <radialGradient id="lr-keywarm" cx="0.26" cy="0.16" r="0.82">
+              <stop offset="0" stopColor="#fff7e8" stopOpacity="0.5" />
+              <stop offset="0.46" stopColor="#fff0d8" stopOpacity="0.13" />
+              <stop offset="1" stopColor="#fff0d8" stopOpacity="0" />
             </radialGradient>
-            <linearGradient id="lr-occlude" x1="0.15" y1="0.05" x2="1" y2="1">
-              <stop offset="0.36" stopColor="#000" stopOpacity="0" />
-              <stop offset="1" stopColor="#05070c" stopOpacity="0.5" />
+            <radialGradient id="lr-keycool" cx="0.24" cy="0.13" r="0.8">
+              <stop offset="0" stopColor="#c6dbff" stopOpacity="0.46" />
+              <stop offset="0.44" stopColor="#9fb9e4" stopOpacity="0.12" />
+              <stop offset="1" stopColor="#9fb9e4" stopOpacity="0" />
+            </radialGradient>
+
+            {/* the flank that turns away from it */}
+            <linearGradient id="lr-occlude" x1="0.18" y1="0.06" x2="1" y2="1">
+              <stop offset="0.34" stopColor="#000" stopOpacity="0" />
+              <stop offset="1" stopColor="#04060b" stopOpacity="0.58" />
             </linearGradient>
+            {/* what the deck throws back up at it */}
+            <linearGradient id="lr-bounce" x1="0" y1="1" x2="0.2" y2="0.35">
+              <stop offset="0" stopColor="#7d94bb" stopOpacity="0.3" />
+              <stop offset="1" stopColor="#7d94bb" stopOpacity="0" />
+            </linearGradient>
+
+            {/* moonlight only reaches the room through this much wash */}
+            <linearGradient id="lr-nightwash" x1="0.1" y1="0" x2="0.9" y2="1">
+              <stop offset="0" stopColor="#141b26" />
+              <stop offset="1" stopColor="#080b12" />
+            </linearGradient>
+
             <linearGradient id="lr-steel" x1="0.1" y1="0" x2="0.9" y2="1">
               <stop offset="0" stopColor="#f2f4f6" />
-              <stop offset="0.5" stopColor="#adb3b9" />
-              <stop offset="1" stopColor="#6d747b" />
+              <stop offset="0.44" stopColor="#b2b8be" />
+              <stop offset="0.78" stopColor="#6d747b" />
+              <stop offset="1" stopColor="#aab0b6" />
             </linearGradient>
-            <mask id="lr-tubemask">
+
+            {/* side facing the light / side facing away, for the rim passes */}
+            <linearGradient
+              id="lr-litgrad"
+              x1="0.04"
+              y1="0"
+              x2="0.82"
+              y2="0.96"
+            >
+              <stop offset="0" stopColor="#fff" />
+              <stop offset="0.46" stopColor="#4b4b4b" />
+              <stop offset="0.82" stopColor="#000" />
+            </linearGradient>
+            <linearGradient
+              id="lr-fargrad"
+              x1="0.22"
+              y1="0.06"
+              x2="0.96"
+              y2="1"
+            >
+              <stop offset="0.36" stopColor="#000" />
+              <stop offset="1" stopColor="#fff" />
+            </linearGradient>
+            <mask id="lr-lit">
+              <rect width={VW} height={VH} fill="url(#lr-litgrad)" />
+            </mask>
+            <mask id="lr-far">
+              <rect width={VW} height={VH} fill="url(#lr-fargrad)" />
+            </mask>
+
+            <mask id="lr-tube">
               <circle
                 cx={CX}
                 cy={CY}
@@ -84,150 +152,296 @@ export function LifeRing() {
                 strokeWidth={W}
               />
             </mask>
+            <clipPath id="lr-eye">
+              <circle cx={CX} cy={CY} r={INNER} />
+            </clipPath>
+
+            {/* the tooth of moulded vinyl over foam */}
+            <filter id="lr-tooth" x="0" y="0" width="100%" height="100%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="1.15"
+                numOctaves="2"
+                seed="7"
+              />
+              <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.22 0" />
+              <feComposite in2="SourceGraphic" operator="in" />
+            </filter>
+            <filter id="lr-soften" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3.4" />
+            </filter>
           </defs>
 
-          {/* bracket, behind the ring: only the tip shows through the eye */}
+          {/* the bracket, behind the ring: only the tip shows through the eye */}
           <g className="lr-peg">
             <rect
-              x={CX - 7}
-              y="17"
-              width="14"
-              height="5"
-              rx="2.4"
-              fill="url(#lr-steel)"
-            />
-            <rect
-              x={CX - 2.6}
-              y="20"
-              width="5.2"
-              height="28"
+              x={CX - 8}
+              y="9"
+              width="16"
+              height="6"
               rx="2.6"
               fill="url(#lr-steel)"
             />
-            <circle cx={CX} cy="19.4" r="1.1" fill="#4b5157" />
+            <circle cx={CX - 4.6} cy="12" r="1.1" fill="#4b5157" />
+            <circle cx={CX + 4.6} cy="12" r="1.1" fill="#4b5157" />
+            <path
+              d={`M${CX - 2.7} 14 V58 q0 4.4 4.4 4.4 h1`}
+              fill="none"
+              stroke="url(#lr-steel)"
+              strokeWidth="5.4"
+              strokeLinecap="round"
+            />
+            <path
+              d={`M${CX - 4.3} 15 V57`}
+              stroke="#fff"
+              strokeOpacity="0.4"
+              strokeWidth="0.9"
+              strokeLinecap="round"
+            />
           </g>
 
-          <g className="lr-tube">
+          {/* the ring's own shadow, falling on the bulkhead inside the eye */}
+          <g className="lr-castshadow" clipPath="url(#lr-eye)">
             <circle
-              cx={CX}
-              cy={CY}
+              cx={CX + 4}
+              cy={CY + 5.5}
               r={R}
               fill="none"
-              stroke="#efeadf"
+              stroke="#02040a"
               strokeWidth={W}
+              filter="url(#lr-soften)"
             />
+          </g>
+
+          <g mask="url(#lr-tube)">
+            {/* ── albedo: foam, paint, tape. Turned a few degrees off square,
+                 because it is hung rather than mounted — and because square
+                 quadrants are most of what makes a ring read as a logo. The
+                 light below stays put; only the object turns. ── */}
+            <g transform={SPIN}>
+              <rect width={VW} height={VH} fill="#e7e1d3" />
+              <circle
+                cx={CX}
+                cy={CY}
+                r={R}
+                fill="none"
+                stroke="#cd5620"
+                strokeWidth={W}
+                strokeDasharray={`${QUAD} ${QUAD}`}
+                strokeDashoffset={-(C * 22.5) / 360}
+              />
+              {/* a hair of relief where paint meets foam */}
+              <circle
+                cx={CX}
+                cy={CY}
+                r={R}
+                fill="none"
+                stroke="#000"
+                strokeOpacity="0.16"
+                strokeWidth={W}
+                strokeDasharray={`1 ${QUAD - 1}`}
+                strokeDashoffset={-(C * 22.5) / 360}
+              />
+
+              <g className="lr-tape">
+                {TAPES.map((deg) => {
+                  const [x, y] = at(deg, R);
+                  return (
+                    <g
+                      key={deg}
+                      transform={`translate(${n(x)} ${n(y)}) rotate(${deg})`}
+                    >
+                      <rect
+                        x="-3.8"
+                        y={-(W / 2 + 1)}
+                        width="7.6"
+                        height={W + 2}
+                        fill="#b4bac1"
+                      />
+                      <rect
+                        x="-3.8"
+                        y={-(W / 2 + 1)}
+                        width="0.8"
+                        height={W + 2}
+                        fill="#000"
+                        fillOpacity="0.26"
+                      />
+                      <rect
+                        x="3"
+                        y={-(W / 2 + 1)}
+                        width="0.8"
+                        height={W + 2}
+                        fill="#000"
+                        fillOpacity="0.26"
+                      />
+                    </g>
+                  );
+                })}
+              </g>
+            </g>
+
+            <rect
+              className="lr-tooth"
+              width={VW}
+              height={VH}
+              fill="#000"
+              filter="url(#lr-tooth)"
+            />
+
+            {/* ── light ── */}
+            <rect width={VW} height={VH} fill="url(#lr-form)" />
+            <rect
+              className="lr-night"
+              width={VW}
+              height={VH}
+              fill="url(#lr-nightwash)"
+            />
+            <rect
+              className="lr-bounce"
+              width={VW}
+              height={VH}
+              fill="url(#lr-bounce)"
+            />
+            <rect
+              className="lr-keywarm"
+              width={VW}
+              height={VH}
+              fill="url(#lr-keywarm)"
+            />
+            <rect
+              className="lr-keycool"
+              width={VW}
+              height={VH}
+              fill="url(#lr-keycool)"
+            />
+
+            {/* the broad soft specular vinyl gives back along the crown */}
             <circle
+              className="lr-spec"
               cx={CX}
               cy={CY}
-              r={R}
+              r={R + 1}
               fill="none"
-              stroke="#d1601f"
-              strokeWidth={W}
-              strokeDasharray={`${BAND} ${BAND}`}
-              strokeDashoffset={-(C * 22.5) / 360}
+              stroke="#dbe6fb"
+              strokeWidth={W * 0.26}
+              mask="url(#lr-lit)"
             />
-            {/* a hair of relief where paint meets foam */}
-            <circle
-              cx={CX}
-              cy={CY}
-              r={R}
-              fill="none"
-              stroke="#000"
-              strokeOpacity="0.13"
-              strokeWidth={W}
-              strokeDasharray={`0.9 ${BAND - 0.9}`}
-              strokeDashoffset={-(C * 22.5) / 360}
-            />
-            <g className="lr-tape">
-              {[45, 225].map((deg) => {
+
+            {/* tape is retro-reflective: after dark it is the brightest thing
+                on the ring, and the last detail to go */}
+            <g className="lr-tapeglow" transform={SPIN}>
+              {TAPES.map((deg) => {
                 const [x, y] = at(deg, R);
                 return (
                   <rect
                     key={deg}
-                    x={x - 7}
-                    y={y - 2.4}
-                    width="14"
-                    height="4.8"
-                    rx="0.7"
-                    fill="#cfd4d9"
-                    transform={`rotate(${deg} ${x.toFixed(2)} ${y.toFixed(2)})`}
+                    x="-3.8"
+                    y={-(W / 2 + 1)}
+                    width="7.6"
+                    height={W + 2}
+                    fill="#c4d6f4"
+                    transform={`translate(${n(x)} ${n(y)}) rotate(${deg})`}
                   />
                 );
               })}
             </g>
 
-            {/* the tube's own form, over paint and foam alike */}
-            <circle
-              cx={CX}
-              cy={CY}
-              r={R}
-              fill="none"
-              stroke="url(#lr-tube)"
-              strokeWidth={W}
+            <rect
+              className="lr-shade"
+              width={VW}
+              height={VH}
+              fill="url(#lr-occlude)"
             />
 
-            <g mask="url(#lr-tubemask)">
-              <rect
-                className="lr-key"
-                x="0"
-                y="0"
-                width="130"
-                height="142"
-                fill="url(#lr-key)"
-              />
-              <rect
-                className="lr-cool"
-                x="0"
-                y="0"
-                width="130"
-                height="142"
-                fill="#5f7ba6"
-              />
-              <rect
-                className="lr-shade"
-                x="0"
-                y="0"
-                width="130"
-                height="142"
-                fill="url(#lr-occlude)"
-              />
-            </g>
+            {/* the cool edge the moon leaves on the outer face turned toward
+                it, and on the far wall of the eye, which faces it too */}
+            <circle
+              className="lr-rim"
+              cx={CX}
+              cy={CY}
+              r={OUTER - 0.7}
+              fill="none"
+              stroke="#b6cdf0"
+              strokeWidth="1.4"
+              mask="url(#lr-lit)"
+            />
+            <circle
+              className="lr-rim"
+              cx={CX}
+              cy={CY}
+              r={INNER + 0.7}
+              fill="none"
+              stroke="#9ab4dd"
+              strokeWidth="1.3"
+              mask="url(#lr-far)"
+            />
           </g>
 
-          {/* grab line: laced at four points, draped between them */}
-          <g className="lr-rope">
-            {[0, 90, 180, 270].map((deg) => (
-              <path
-                key={`swag${deg}`}
-                d={ropeSwag(deg, deg + 90)}
-                fill="none"
-                stroke="#ab9d80"
-                strokeWidth="1.9"
-                strokeLinecap="round"
-              />
+          {/* ── grab line: seized at four points, slack between them ── */}
+          <g className="lr-rope" transform={SPIN}>
+            {SEIZINGS.map((deg) => (
+              <g key={`swag${deg}`}>
+                <path
+                  d={swag(deg, deg + 90)}
+                  fill="none"
+                  stroke="#4d442f"
+                  strokeWidth="2.7"
+                  strokeLinecap="round"
+                />
+                <path
+                  d={swag(deg, deg + 90)}
+                  fill="none"
+                  stroke="#9c8e70"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                />
+                {/* the lay of the rope */}
+                <path
+                  className="lr-lay"
+                  d={swag(deg, deg + 90)}
+                  fill="none"
+                  stroke="#5d5238"
+                  strokeWidth="1.9"
+                  strokeDasharray="1 2.1"
+                  strokeLinecap="butt"
+                />
+                <path
+                  className="lr-ropelit"
+                  d={swag(deg, deg + 90)}
+                  fill="none"
+                  stroke="#d8cdae"
+                  strokeWidth="0.8"
+                  strokeLinecap="round"
+                  mask="url(#lr-lit)"
+                />
+              </g>
             ))}
-            {[0, 90, 180, 270].map((deg) => {
+
+            {/* whipped cord, three turns across the tube, holding it fast */}
+            {SEIZINGS.map((deg) => {
               const [x, y] = at(deg, R);
-              const reach = W / 2 + 2.8;
+              const reach = W / 2 + 1.6;
               return (
                 <g
-                  key={`lace${deg}`}
-                  transform={`translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${deg})`}
+                  key={`seize${deg}`}
+                  transform={`translate(${n(x)} ${n(y)}) rotate(${deg})`}
                 >
-                  <path
-                    d={`M-${reach} -1.7 Q0 -4.6 ${reach} -1.7`}
-                    fill="none"
-                    stroke="#ddd3bd"
-                    strokeWidth="1.9"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d={`M-${reach} 2 Q0 -0.9 ${reach} 2`}
-                    fill="none"
-                    stroke="#a4967c"
-                    strokeWidth="1.9"
-                    strokeLinecap="round"
-                  />
+                  {[-2.4, 0, 2.4].map((off) => (
+                    <g key={off}>
+                      <path
+                        d={`M${off} ${-reach} L${off} ${reach}`}
+                        stroke="#453d2b"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                      <path
+                        d={`M${off - 0.35} ${-reach + 0.6} L${off - 0.35} ${reach - 0.6}`}
+                        stroke="#b5a884"
+                        strokeWidth="1"
+                        strokeLinecap="round"
+                      />
+                    </g>
+                  ))}
                 </g>
               );
             })}
