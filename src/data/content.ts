@@ -15,7 +15,7 @@ export const identity = {
  * the short side. Crossfaded by shade position.
  */
 export const seaPhotos = {
-  day: "/ocean/day.webp",
-  dusk: "/ocean/dusk.webp",
-  night: "/ocean/night.webp",
+  day: "/ocean/carttonsky.png",
+  dusk: "/ocean/cartoon-dusky.png",
+  night: "/ocean/carttonnight.png",
 };
