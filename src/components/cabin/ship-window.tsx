@@ -146,8 +146,9 @@ export function ShipWindow() {
 
   return (
     <div className="window-block">
+      <LifeRing />
+
       <div className="bulkhead">
-        <LifeRing />
         <LifeJacket />
 
         <div

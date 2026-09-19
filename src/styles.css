@@ -198,6 +198,10 @@
    the intensity and colour of that one light.                             */
 
 .window-block {
+  /* full width so the wall around the porthole is real estate the other
+     fittings can be placed on, rather than space hung off the frame */
+  position: relative;
+  width: 100%;
   display: flex;
   justify-content: center;
   margin-bottom: 28px;
@@ -738,16 +742,19 @@
 /* ── Lifebuoy, port side ── */
 
 .lifering {
+  /* not hung off the porthole — it has its own place on the wall, low and to
+     port, where it can carry the left half of the composition on its own */
   position: absolute;
-  top: calc(var(--port) * 0.5);
-  right: calc(100% + clamp(58px, 9vw, 132px));
-  width: calc(var(--port) * 0.5);
+  top: calc(var(--port) * 0.34);
+  left: clamp(16px, 11vw, 200px);
+  width: clamp(116px, 14vw, 208px);
   pointer-events: none;
   user-select: none;
 }
 
 .lifering-sway {
-  /* hangs from its peg, a little off-axis, on its own beat */
+  /* hangs from its peg, a little off-axis, on its own beat — and it is the
+     heavier object, so it swings less than the jacket */
   animation: ring-sway var(--roll-period) ease-in-out infinite alternate;
   animation-delay: -4.5s;
   transform-origin: 50% 13%;
@@ -854,10 +861,10 @@
 
 @keyframes ring-sway {
   from {
-    transform: rotate(-2.4deg);
+    transform: rotate(-1.7deg);
   }
   to {
-    transform: rotate(1.2deg);
+    transform: rotate(0.8deg);
   }
 }
 
@@ -1130,10 +1137,10 @@
   }
 
   .lifering {
-    right: calc(100% + 8px);
-    width: calc((100vw - var(--port)) / 2 - 18px);
-    max-width: 58px;
-    top: calc(var(--port) * 0.52);
+    left: 10px;
+    width: calc((100vw - var(--port)) / 2 - 20px);
+    max-width: 62px;
+    top: calc(var(--port) * 0.46);
   }
 
   .voyage-chart {
