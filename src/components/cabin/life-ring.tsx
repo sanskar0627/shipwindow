@@ -1,11 +1,34 @@
 /**
- * A lifebuoy on its bracket, port side of the porthole and a little lower.
- * Same lighting as everything else on this wall: key from the upper left,
- * occlusion to the lower right.
+ * Lifebuoy on its bracket, port side of the porthole and a little lower.
+ *
+ * Built the way the object is built: a foam torus, four painted quadrants that
+ * follow it, a grab line laced at four points and draped between them. Shading
+ * is layered like everything else on this wall — first the form of the tube
+ * itself (a radial pass, bright along the crown, dark at both edges), then the
+ * one key light from the upper left.
  */
 
-const R = 40; // band radius
-const C = 2 * Math.PI * R; // circumference, for the four painted quadrants
+const CX = 65;
+const CY = 78;
+const R = 42; // centre line of the tube
+const W = 20; // tube thickness
+const OUTER = R + W / 2;
+const C = 2 * Math.PI * R;
+const BAND = C / 8; // four painted quadrants, four bare ones
+
+const rad = (deg: number) => ((deg - 90) * Math.PI) / 180;
+const at = (deg: number, r: number): [number, number] => [
+  CX + Math.cos(rad(deg)) * r,
+  CY + Math.sin(rad(deg)) * r,
+];
+
+/** the grab line drapes outward between its lacing points */
+function ropeSwag(fromDeg: number, toDeg: number) {
+  const [x1, y1] = at(fromDeg, R + 9);
+  const [x2, y2] = at(toDeg, R + 9);
+  const [cx, cy] = at((fromDeg + toDeg) / 2, OUTER + 16);
+  return `M${x1.toFixed(1)} ${y1.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+}
 
 export function LifeRing() {
   return (
@@ -13,167 +36,196 @@ export function LifeRing() {
       <div className="lifering-sway">
         <svg
           className="lifering-body"
-          viewBox="0 0 120 130"
+          viewBox="0 0 130 142"
           role="presentation"
         >
           <defs>
-            <linearGradient id="lr-foam" x1="0.15" y1="0" x2="0.85" y2="1">
-              <stop offset="0" stopColor="#fbf8f2" />
-              <stop offset="0.45" stopColor="#e6e1d7" />
-              <stop offset="1" stopColor="#b9b3a7" />
-            </linearGradient>
-            <linearGradient id="lr-band" x1="0.15" y1="0" x2="0.85" y2="1">
-              <stop offset="0" stopColor="#e2702f" />
-              <stop offset="0.5" stopColor="#c8571f" />
-              <stop offset="1" stopColor="#8e3415" />
-            </linearGradient>
-            <radialGradient id="lr-key" cx="0.26" cy="0.2" r="0.8">
-              <stop offset="0" stopColor="#fffaf0" stopOpacity="0.45" />
-              <stop offset="0.5" stopColor="#fff2de" stopOpacity="0.1" />
+            {/* the cross-section of the tube: dark at both edges, bright along
+                the crown — what makes it read as round rather than flat */}
+            <radialGradient
+              id="lr-tube"
+              gradientUnits="userSpaceOnUse"
+              cx={CX}
+              cy={CY}
+              r={OUTER}
+            >
+              <stop
+                offset={(R - W / 2) / OUTER}
+                stopColor="#000"
+                stopOpacity="0.46"
+              />
+              <stop offset="0.68" stopColor="#000" stopOpacity="0.1" />
+              <stop offset="0.76" stopColor="#fff" stopOpacity="0.15" />
+              <stop offset="0.84" stopColor="#fff" stopOpacity="0.09" />
+              <stop offset="0.93" stopColor="#000" stopOpacity="0.1" />
+              <stop offset="1" stopColor="#000" stopOpacity="0.44" />
+            </radialGradient>
+            <radialGradient id="lr-key" cx="0.28" cy="0.2" r="0.78">
+              <stop offset="0" stopColor="#fffaf0" stopOpacity="0.5" />
+              <stop offset="0.5" stopColor="#fff2de" stopOpacity="0.12" />
               <stop offset="1" stopColor="#fff2de" stopOpacity="0" />
             </radialGradient>
             <linearGradient id="lr-occlude" x1="0.15" y1="0.05" x2="1" y2="1">
-              <stop offset="0.4" stopColor="#000" stopOpacity="0" />
-              <stop offset="1" stopColor="#05070c" stopOpacity="0.45" />
+              <stop offset="0.36" stopColor="#000" stopOpacity="0" />
+              <stop offset="1" stopColor="#05070c" stopOpacity="0.5" />
             </linearGradient>
-            <mask id="lr-ringmask">
+            <linearGradient id="lr-steel" x1="0.1" y1="0" x2="0.9" y2="1">
+              <stop offset="0" stopColor="#f2f4f6" />
+              <stop offset="0.5" stopColor="#adb3b9" />
+              <stop offset="1" stopColor="#6d747b" />
+            </linearGradient>
+            <mask id="lr-tubemask">
               <circle
-                cx="60"
-                cy="68"
+                cx={CX}
+                cy={CY}
                 r={R}
                 fill="none"
                 stroke="#fff"
-                strokeWidth="19"
+                strokeWidth={W}
               />
             </mask>
           </defs>
 
-          {/* bracket: a short steel peg the ring hangs on */}
+          {/* bracket, behind the ring: only the tip shows through the eye */}
           <g className="lr-peg">
             <rect
-              x="55.5"
-              y="11"
-              width="9"
-              height="4.5"
-              rx="2.2"
-              fill="#aeb4ba"
+              x={CX - 7}
+              y="17"
+              width="14"
+              height="5"
+              rx="2.4"
+              fill="url(#lr-steel)"
             />
             <rect
-              x="57.5"
-              y="14"
-              width="5"
-              height="9"
-              rx="2.5"
-              fill="#c9ced3"
+              x={CX - 2.6}
+              y="20"
+              width="5.2"
+              height="28"
+              rx="2.6"
+              fill="url(#lr-steel)"
             />
-            <circle cx="60" cy="13.2" r="1.1" fill="#4e545a" />
+            <circle cx={CX} cy="19.4" r="1.1" fill="#4b5157" />
           </g>
 
-          {/* the ring itself */}
-          <g mask="url(#lr-ringmask)">
-            <rect x="12" y="20" width="96" height="96" fill="url(#lr-foam)" />
+          <g className="lr-tube">
             <circle
-              cx="60"
-              cy="68"
+              cx={CX}
+              cy={CY}
               r={R}
               fill="none"
-              stroke="url(#lr-band)"
-              strokeWidth="19"
-              strokeDasharray={`${C / 8} ${C / 8}`}
-              strokeDashoffset={C / 16}
+              stroke="#efeadf"
+              strokeWidth={W}
             />
-            {/* the bands are taped on, so they sit a hair proud of the foam */}
             <circle
-              cx="60"
-              cy="68"
+              cx={CX}
+              cy={CY}
+              r={R}
+              fill="none"
+              stroke="#d1601f"
+              strokeWidth={W}
+              strokeDasharray={`${BAND} ${BAND}`}
+              strokeDashoffset={-(C * 22.5) / 360}
+            />
+            {/* a hair of relief where paint meets foam */}
+            <circle
+              cx={CX}
+              cy={CY}
               r={R}
               fill="none"
               stroke="#000"
-              strokeOpacity="0.16"
-              strokeWidth="19"
-              strokeDasharray={`0.8 ${C / 8 - 0.8}`}
-              strokeDashoffset={C / 16}
+              strokeOpacity="0.13"
+              strokeWidth={W}
+              strokeDasharray={`0.9 ${BAND - 0.9}`}
+              strokeDashoffset={-(C * 22.5) / 360}
             />
-            <rect
-              className="lr-cool"
-              x="12"
-              y="20"
-              width="96"
-              height="96"
-              fill="#5f7ba6"
+            <g className="lr-tape">
+              {[45, 225].map((deg) => {
+                const [x, y] = at(deg, R);
+                return (
+                  <rect
+                    key={deg}
+                    x={x - 7}
+                    y={y - 2.4}
+                    width="14"
+                    height="4.8"
+                    rx="0.7"
+                    fill="#cfd4d9"
+                    transform={`rotate(${deg} ${x.toFixed(2)} ${y.toFixed(2)})`}
+                  />
+                );
+              })}
+            </g>
+
+            {/* the tube's own form, over paint and foam alike */}
+            <circle
+              cx={CX}
+              cy={CY}
+              r={R}
+              fill="none"
+              stroke="url(#lr-tube)"
+              strokeWidth={W}
             />
-            <rect
-              className="lr-key"
-              x="12"
-              y="20"
-              width="96"
-              height="96"
-              fill="url(#lr-key)"
-            />
-            <rect
-              className="lr-shade"
-              x="12"
-              y="20"
-              width="96"
-              height="96"
-              fill="url(#lr-occlude)"
-            />
+
+            <g mask="url(#lr-tubemask)">
+              <rect
+                className="lr-key"
+                x="0"
+                y="0"
+                width="130"
+                height="142"
+                fill="url(#lr-key)"
+              />
+              <rect
+                className="lr-cool"
+                x="0"
+                y="0"
+                width="130"
+                height="142"
+                fill="#5f7ba6"
+              />
+              <rect
+                className="lr-shade"
+                x="0"
+                y="0"
+                width="130"
+                height="142"
+                fill="url(#lr-occlude)"
+              />
+            </g>
           </g>
 
-          {/* form: the tube turns away at both edges */}
-          <circle
-            className="lr-roll"
-            cx="60"
-            cy="68"
-            r={R}
-            fill="none"
-            stroke="#2a0c02"
-            strokeWidth="19"
-            mask="url(#lr-ringmask)"
-          />
-          <circle
-            cx="60"
-            cy="68"
-            r={R + 9.5}
-            fill="none"
-            stroke="#000"
-            strokeOpacity="0.2"
-            strokeWidth="0.8"
-          />
-          <circle
-            cx="60"
-            cy="68"
-            r={R - 9.5}
-            fill="none"
-            stroke="#000"
-            strokeOpacity="0.26"
-            strokeWidth="0.9"
-          />
-
-          {/* grab line: four short loops of rope around the tube */}
+          {/* grab line: laced at four points, draped between them */}
           <g className="lr-rope">
-            {[38, 128, 218, 308].map((deg) => {
-              const a = (deg * Math.PI) / 180;
-              const x = 60 + Math.cos(a) * R;
-              const y = 68 + Math.sin(a) * R;
+            {[0, 90, 180, 270].map((deg) => (
+              <path
+                key={`swag${deg}`}
+                d={ropeSwag(deg, deg + 90)}
+                fill="none"
+                stroke="#ab9d80"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+              />
+            ))}
+            {[0, 90, 180, 270].map((deg) => {
+              const [x, y] = at(deg, R);
+              const reach = W / 2 + 2.8;
               return (
                 <g
-                  key={deg}
+                  key={`lace${deg}`}
                   transform={`translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${deg})`}
                 >
                   <path
-                    d="M-11.5 0 Q0 -3.4 11.5 0"
+                    d={`M-${reach} -1.7 Q0 -4.6 ${reach} -1.7`}
                     fill="none"
-                    stroke="#cfc6b3"
-                    strokeWidth="1.4"
+                    stroke="#ddd3bd"
+                    strokeWidth="1.9"
                     strokeLinecap="round"
                   />
                   <path
-                    d="M-11.5 0.9 Q0 -2.5 11.5 0.9"
+                    d={`M-${reach} 2 Q0 -0.9 ${reach} 2`}
                     fill="none"
-                    stroke="#000"
-                    strokeOpacity="0.18"
-                    strokeWidth="1"
+                    stroke="#a4967c"
+                    strokeWidth="1.9"
                     strokeLinecap="round"
                   />
                 </g>

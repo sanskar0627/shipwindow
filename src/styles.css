@@ -710,7 +710,7 @@
 .lifejacket {
   position: absolute;
   top: calc(var(--port) * -0.105);
-  left: calc(100% + clamp(34px, 6vw, 78px));
+  left: calc(100% + clamp(42px, 7vw, 96px));
   width: calc(var(--port) * 0.4);
   margin: 0;
   pointer-events: none;
@@ -739,17 +739,18 @@
 
 .lifering {
   position: absolute;
-  top: calc(var(--port) * 0.52);
-  right: calc(100% + clamp(28px, 5vw, 68px));
-  width: calc(var(--port) * 0.42);
+  top: calc(var(--port) * 0.5);
+  right: calc(100% + clamp(58px, 9vw, 132px));
+  width: calc(var(--port) * 0.5);
   pointer-events: none;
   user-select: none;
 }
 
 .lifering-sway {
-  animation: jacket-sway var(--roll-period) ease-in-out infinite alternate;
+  /* hangs from its peg, a little off-axis, on its own beat */
+  animation: ring-sway var(--roll-period) ease-in-out infinite alternate;
   animation-delay: -4.5s;
-  transform-origin: 50% 9%;
+  transform-origin: 50% 13%;
   filter: drop-shadow(
     calc(3px + var(--tone) * 1px) calc(7px - var(--tone) * 2px)
       calc(7px + var(--tone) * 7px)
@@ -785,7 +786,7 @@
 }
 
 .lr-rope {
-  opacity: calc(0.85 - var(--tone) * 0.35);
+  opacity: calc(0.9 - var(--tone) * 0.3);
 }
 
 .lr-peg {
@@ -849,6 +850,15 @@
   inset: 0;
   filter: brightness(calc(1 - var(--tone) * 0.16))
     drop-shadow(1px 1.5px 1.5px rgb(0 0 0 / calc(0.4 + var(--tone) * 0.28)));
+}
+
+@keyframes ring-sway {
+  from {
+    transform: rotate(-2.4deg);
+  }
+  to {
+    transform: rotate(1.2deg);
+  }
 }
 
 @keyframes jacket-sway {
@@ -1120,10 +1130,10 @@
   }
 
   .lifering {
-    right: calc(100% + 10px);
-    width: calc((100vw - var(--port)) / 2 - 22px);
-    max-width: 52px;
-    top: calc(var(--port) * 0.54);
+    right: calc(100% + 8px);
+    width: calc((100vw - var(--port)) / 2 - 18px);
+    max-width: 58px;
+    top: calc(var(--port) * 0.52);
   }
 
   .voyage-chart {
