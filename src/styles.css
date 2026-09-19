@@ -977,325 +977,31 @@
 /* ── Hero ── */
 
 .hero {
-  max-width: 34rem;
+  max-width: 36rem;
   text-align: center;
-  margin-bottom: 72px;
+  margin-bottom: clamp(88px, 13vw, 168px);
 }
 
 .hero-title {
-  margin: 0 0 16px;
-  font-size: clamp(1.35rem, 1.1rem + 1.1vw, 1.75rem);
+  /* the one piece of display type above the fold, so it gets the scale and
+     the tight tracking that goes with it */
+  margin: 0 auto 18px;
+  max-width: 15ch;
+  font-size: clamp(1.7rem, 1.1rem + 2.3vw, 2.7rem);
   font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
   text-wrap: balance;
   color: var(--fg);
 }
 
 .hero-blurb {
-  margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.55;
-  color: var(--muted);
-  text-wrap: pretty;
-}
-
-/* ── Experience, plotted as a passage plan ── */
-
-.voyage {
-  --gutter: 84px;
-  --rail: 78px;
-  --mark: 34px;
-  width: min(860px, 100%);
-  margin: clamp(60px, 9vw, 110px) auto 0;
-}
-
-.voyage-head {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: clamp(18px, 2.4vw, 28px);
-}
-
-.voyage-title {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--fg);
-}
-
-.voyage-rule {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, var(--hairline), transparent 88%);
-}
-
-/* the chart is the positioning context the measured course is drawn into */
-.chart {
-  position: relative;
-}
-
-.course {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: visible;
-}
-
-.course-line {
-  stroke: color-mix(in oklab, var(--fg) 40%, transparent);
-}
-
-.course-spur {
-  stroke: color-mix(in oklab, var(--fg) 16%, transparent);
-}
-
-.course-ring {
-  stroke: color-mix(in oklab, var(--fg) 38%, transparent);
-}
-
-.course-dot,
-.course-end {
-  fill: color-mix(in oklab, var(--fg) 30%, transparent);
-}
-
-.course-point[data-current="true"] .course-ring {
-  stroke: color-mix(in oklab, var(--color-accent) 82%, var(--fg));
-}
-
-.course-point[data-current="true"] .course-dot {
-  fill: color-mix(in oklab, var(--color-accent) 82%, var(--fg));
-}
-
-/* ── the vessel, at the head of the course ── */
-
-.chart-start,
-.berth {
-  display: grid;
-  grid-template-columns: var(--gutter) var(--rail) minmax(0, 1fr);
-  align-items: start;
-}
-
-.chart-start {
-  margin-bottom: clamp(26px, 4vw, 44px);
-}
-
-.chart-pin,
-.berth-pin {
-  /* the rail cell: what the course is measured against, nothing more */
-  display: grid;
-  place-items: center;
-  height: var(--mark);
-}
-
-.ship-mark {
-  width: 26px;
-  height: auto;
-  overflow: visible;
-  transform-origin: 50% 50%;
-  animation: ship-drift var(--roll-period) ease-in-out infinite alternate;
-}
-
-.ship-hull {
-  fill: color-mix(in oklab, var(--color-accent) 78%, var(--fg));
-}
-
-.ship-house {
-  fill: var(--bg);
-  opacity: 0.55;
-}
-
-.ship-light {
-  fill: var(--bg);
-}
-
-@keyframes ship-drift {
-  from {
-    transform: translateY(1px) rotate(-2.4deg);
-  }
-  to {
-    transform: translateY(-1px) rotate(2.4deg);
-  }
-}
-
-.chart-label {
-  align-self: center;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: color-mix(in oklab, var(--color-accent) 70%, var(--fg));
-}
-
-/* ── berths ── */
-
-.log {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.berth {
-  padding-bottom: clamp(34px, 5vw, 54px);
-}
-
-.berth:last-child {
-  padding-bottom: 8px;
-}
-
-.berth-when {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin: 0;
-  padding-top: calc((var(--mark) - 26px) / 2);
-  text-align: right;
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-.berth-leg {
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.berth-arrow {
-  margin: 0 0.35em;
-  opacity: 0.7;
-}
-
-.berth-year {
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  color: color-mix(in oklab, var(--fg) 62%, transparent);
-}
-
-.berth-body {
-  min-width: 0;
-}
-
-/* ── the drawn company marks ── */
-
-.mark {
-  display: grid;
-  place-items: center;
-  width: var(--mark);
-  height: var(--mark);
-  margin-bottom: 12px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in oklab, var(--fg) 12%, transparent);
-  background: color-mix(in oklab, var(--tint) 12%, transparent);
-  color: color-mix(in oklab, var(--tint) 82%, var(--fg));
-  box-shadow: 0 1px 2px rgb(3 5 10 / calc(0.06 + var(--tone) * 0.2));
-}
-
-.mark svg {
-  width: 62%;
-  height: 62%;
-  overflow: visible;
-}
-
-.mark[data-mark="senzary"] {
-  --tint: #2fa8a0;
-}
-
-.mark[data-mark="m81"] {
-  --tint: #6d7cf0;
-}
-
-.berth-company {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 0 0 2px;
-  font-size: 1.12rem;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-  color: var(--fg);
-}
-
-.berth-now {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: color-mix(in oklab, var(--color-accent) 82%, var(--fg));
-}
-
-.berth-role {
-  margin: 0 0 10px;
-  font-size: 0.95rem;
-  color: var(--fg);
-  opacity: 0.85;
-}
-
-.berth-copy {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.55;
-  color: var(--muted);
-  max-width: 34rem;
-  text-wrap: pretty;
-}
-
-/* ── what was carried on the leg ── */
-
-.manifest {
-  list-style: none;
-  margin: 18px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-}
-
-.cargo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.cargo-tile {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 26px;
-  border-radius: var(--radius-sm);
-  border: 1px solid color-mix(in oklab, var(--fg) 10%, transparent);
-  background: linear-gradient(
-    150deg,
-    color-mix(in oklab, var(--fg) 7%, transparent),
-    color-mix(in oklab, var(--fg) 3%, transparent)
-  );
-}
-
-.cargo-tile span {
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-  border: 1.5px solid color-mix(in oklab, var(--fg) 36%, transparent);
-  transform: rotate(45deg);
-}
-
-.cargo-text {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
-.cargo-name {
-  font-size: 0.92rem;
-  color: var(--fg);
-}
-
-.cargo-copy {
-  font-size: 0.86rem;
-  line-height: 1.45;
+  /* a measure short enough to read in two lines at almost every width */
+  margin: 0 auto;
+  max-width: 31rem;
+  font-size: clamp(0.98rem, 0.94rem + 0.2vw, 1.08rem);
+  line-height: 1.6;
+  letter-spacing: -0.005em;
   color: var(--muted);
   text-wrap: pretty;
 }
@@ -1327,7 +1033,7 @@
   }
 
   .hero {
-    margin-bottom: 56px;
+    margin-bottom: 72px;
   }
 
   .lifering {
@@ -1335,30 +1041,5 @@
     width: calc((100vw - var(--port)) / 2 - 20px);
     max-width: 62px;
     top: calc(var(--port) * 0.52);
-  }
-
-  /* the course still runs, but the dates move up out of their own column */
-  .voyage {
-    --gutter: 0px;
-    --rail: 40px;
-    --mark: 30px;
-  }
-
-  .berth-when {
-    grid-column: 3;
-    flex-direction: row;
-    align-items: baseline;
-    gap: 8px;
-    padding-top: 0;
-    margin-bottom: 10px;
-    text-align: left;
-  }
-
-  .berth-body {
-    grid-column: 3;
-  }
-
-  .chart-label {
-    grid-column: 3;
   }
 }

@@ -5,7 +5,6 @@ import { useShadeStore } from "@/store/shade";
 import { IdentityPlaque } from "./identity-plaque";
 import { InstrumentCluster } from "./instrument-cluster";
 import { ShipWindow } from "./ship-window";
-import { VoyageRoute } from "./voyage-route";
 
 export function CabinApp() {
   const shade = useShadeStore((s) => s.shade);
@@ -45,8 +44,6 @@ export function CabinApp() {
           <h1 className="hero-title">{identity.role}</h1>
           <p className="hero-blurb">{identity.blurb}</p>
         </header>
-
-        <VoyageRoute />
       </main>
     </div>
   );
