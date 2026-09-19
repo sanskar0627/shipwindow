@@ -745,7 +745,7 @@
   /* not hung off the porthole — it has its own place on the wall, low and to
      port, where it can carry the left half of the composition on its own */
   position: absolute;
-  top: calc(var(--port) * 0.34);
+  top: calc(var(--port) * 0.5);
   left: clamp(16px, 11vw, 200px);
   width: clamp(116px, 14vw, 208px);
   pointer-events: none;
@@ -1140,7 +1140,7 @@
     left: 10px;
     width: calc((100vw - var(--port)) / 2 - 20px);
     max-width: 62px;
-    top: calc(var(--port) * 0.46);
+    top: calc(var(--port) * 0.52);
   }
 
   .voyage-chart {
